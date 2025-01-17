@@ -1,13 +1,21 @@
 ﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using AccountHub.Application.Shared.Mapping;
 using AutoMapper;
+using System.ComponentModel.DataAnnotations;
 
 namespace AccountHub.API.Models
 {
     public class SignUpAccountModel : IMapWith<AddAccountCommand>
     {
+        [MinLength(1)]
+        [MaxLength(35)]
         public required string Username { get; set; }
+        [MinLength(6)]
+        [MaxLength(254)]
+        [EmailAddress]
         public required string Email { get; set; }
+        [MinLength(10)]
+        [MaxLength(45)]
         public required string Password { get; set; }
         public required DateOnly Birthdate { get; set; }
         public IFormFile? Avatar { get; set; }

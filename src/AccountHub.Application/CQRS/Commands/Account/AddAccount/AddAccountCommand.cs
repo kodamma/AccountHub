@@ -18,6 +18,8 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
         public void MapTo(Profile profile)
             => profile.CreateMap<AddAccountCommand, AccountEntity>()
                 .ForMember(d => d.AvatarURL, s => s.Ignore())
+                .ForMember(d => d.PasswordSalt, s => s.Ignore())
+                .ForMember(d => d.PasswordHash, s => s.Ignore())
                 .ForMember(d => d.EmailConfirmed, s => s.Ignore())
                 .ForMember(d => d.Locked, s => s.Ignore())
                 .ForMember(d => d.LockedCount, s => s.Ignore())
