@@ -2,6 +2,7 @@ using AccountHub.Application.Interfaces;
 using AccountHub.Application.Shared;
 using AccountHub.Application.Shared.Mapping;
 using AccountHub.Persistent.Shared;
+using NLog.Extensions.Logging;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,12 @@ builder.Services.AddAutoMapper(x =>
 {
     x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
     x.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
+});
+builder.Services.AddLogging(x =>
+{
+    x.ClearProviders();
+    x.AddConsole();
+    x.AddNLog();
 });
 
 builder.Services.AddControllers();
