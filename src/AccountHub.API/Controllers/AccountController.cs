@@ -2,6 +2,8 @@
 using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountHub.API.Controllers
@@ -24,5 +26,8 @@ namespace AccountHub.API.Controllers
             var result = await mediator.Send(mapper.Map<AddAccountCommand>(model));
             return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Errors);
         }
+
+        [HttpGet("test")]
+        public async Task<IActionResult> Test() => Ok("h");
     }
 }
