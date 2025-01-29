@@ -4,6 +4,7 @@ using AccountHub.Application.Shared;
 using AccountHub.Application.Shared.Mapping;
 using AccountHub.Persistent.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
@@ -25,7 +26,13 @@ builder.Services.AddLogging(x =>
     x.AddConsole();
     x.AddNLog();
 });
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddCookiePolicy(x =>
+{
+    x.Secure = CookieSecurePolicy.Always;
+    x.HttpOnly = HttpOnlyPolicy.Always;
+    x.MinimumSameSitePolicy = SameSiteMode.Strict;
+});
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(x =>
@@ -37,7 +44,7 @@ builder.Services.AddSwaggerGen(x =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "¬ведите токен в формате: Bearer {токен}"
+        Description = "¬ведите токен в формате: Bearer { токен }"
     });
 
     x.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -63,14 +70,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         builder.Configuration.GetSection(JwtOptions.SectionName).Bind(options);
 
         x.RequireHttpsMetadata = true;
+        x.SaveToken = true;
         x.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateIssuer = true,
             ValidIssuer = options.Issuer,
             ValidateAudience = true,
             ValidAudience = options.Audience,
-            ValidateLifetime = true,
             IssuerSigningKey = JwtOptions.GetSymmetricSecurityKey(options.Key),
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
         };
     });
@@ -84,8 +92,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseAuthentication();
-//app.UseAuthorization();
+app.UseCookiePolicy();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

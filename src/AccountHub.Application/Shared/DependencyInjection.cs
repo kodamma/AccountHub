@@ -18,6 +18,7 @@ namespace AccountHub.Application.Shared
 
             services.AddTransient<IFileStorageService, LocalFileStorageService>();
             services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 

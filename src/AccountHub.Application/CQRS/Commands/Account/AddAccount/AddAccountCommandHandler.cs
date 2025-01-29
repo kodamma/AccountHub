@@ -1,10 +1,10 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Interfaces;
+using AccountHub.Application.Responses;
 using AccountHub.Application.Shared.ResultHelper;
 using AccountHub.Application.Validation;
 using AccountHub.Domain.Services;
 using AutoMapper;
-using log4net.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,27 +13,32 @@ using BC = BCrypt.Net.BCrypt;
 
 namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
 {
-    public class AddAccountCommandHandler : ICommandHandler<AddAccountCommand, Result<Guid>>
+    public class AddAccountCommandHandler 
+        : ICommandHandler<AddAccountCommand, Result<SignUpAccountResponse>>
     {
         private readonly IAccountHubDbContext context;
         private readonly ILogger<AddAccountCommandHandler> logger;
         private readonly IFileStorageService fileStorageService;
         private readonly IMapper mapper;
+        private readonly IAuthenticationService authenticationService;
         private readonly AddAccountCommandValidator validator;
+        
         public AddAccountCommandHandler(IAccountHubDbContext context,
                                         IConfiguration configuration,
                                         ILogger<AddAccountCommandHandler> logger,
                                         IFileStorageService fileStorageService,
-                                        IMapper mapper)
+                                        IMapper mapper,
+                                        IAuthenticationService authenticationService)
         {
             this.context = context;
             this.logger = logger;
             this.fileStorageService = fileStorageService;
             this.mapper = mapper;
+            this.authenticationService = authenticationService;
             validator = new AddAccountCommandValidator(configuration);
         }
 
-        public async Task<Result<Guid>> Handle(AddAccountCommand request, CancellationToken cancellationToken)
+        public async Task<Result<SignUpAccountResponse>> Handle(AddAccountCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -59,9 +64,16 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                         await context.Accounts.AddAsync(account, cancellationToken);
                         await context.SaveChangesAsync(cancellationToken);
 
-                        
+                        var tokens = await authenticationService.Authenticate(account, cancellationToken);
+                        SignUpAccountResponse response = new SignUpAccountResponse()
+                        {
+                            AccountId = account.Id,
+                            Username = request.Username,
+                            Token = tokens.Item1,
+                            RefreshToken = tokens.Item2,
+                        };
 
-                        return Result.Success<Guid>(account.Id);
+                        return Result.Success(response);
                     }
                 }
             }
@@ -69,7 +81,7 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
             {
 
             }
-            return Result.Failure<Guid>([new Error("A user with such an email already exists.")]);
+            return Result.Failure<SignUpAccountResponse>([new Error("A user with such an email already exists.")]);
         }
     }
 }

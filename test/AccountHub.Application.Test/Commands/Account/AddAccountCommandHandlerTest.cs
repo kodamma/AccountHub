@@ -49,11 +49,17 @@ namespace AccountHub.Application.Test.Commands.Account
             mapper = new Mapper(mappingConf);
             loggerMock = new Mock<ILogger<AddAccountCommandHandler>>();
 
+            var authenticationServiceMock = new Mock<IAuthenticationService>();
+            authenticationServiceMock.Setup(x 
+                => x.Authenticate(It.IsAny<Domain.Entities.Account>(), new CancellationToken()))
+                .ReturnsAsync(("token", "token"));
+
             handler = new AddAccountCommandHandler(context,
                                                    config,
                                                    loggerMock.Object,
                                                    fileStorageService,
-                                                   mapper);
+                                                   mapper,
+                                                   authenticationServiceMock.Object);
 
             command = new AddAccountCommand()
             {
@@ -71,7 +77,8 @@ namespace AccountHub.Application.Test.Commands.Account
             var result = await handler.Handle(command, new CancellationToken());
 
             Assert.IsTrue(result.IsSuccess);
-            Assert.IsTrue(result.Value.GetType() == typeof(Guid));
+            Assert.IsNotNull(result.Value.Token);
+            Assert.IsNotNull(result.Value.RefreshToken);
         }
     }
 }

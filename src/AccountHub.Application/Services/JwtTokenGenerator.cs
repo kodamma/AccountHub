@@ -24,8 +24,8 @@ namespace AccountHub.Application.Services
                 Issuer = jwtOptions.Issuer,
                 Audience = jwtOptions.Audience,
                 Subject = new ClaimsIdentity(claims),
-                NotBefore = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.AddMinutes(jwtOptions.LifeTime),
+                NotBefore = DateTime.Now,
+                Expires = DateTime.Now.AddMinutes(jwtOptions.LifeTime),
                 SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
