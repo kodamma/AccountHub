@@ -1,9 +1,10 @@
 using AccountHub.Application.Interfaces;
+using AccountHub.Application.Options;
 using AccountHub.Application.Shared;
 using AccountHub.Application.Shared.Mapping;
 using AccountHub.Persistent.Shared;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
 using System.Reflection;
@@ -11,12 +12,13 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddPersistent(builder.Configuration);
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddAutoMapper(x =>
 {
     x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
     x.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
 });
+
 builder.Services.AddLogging(x =>
 {
     x.ClearProviders();
@@ -32,13 +34,13 @@ builder.Services.AddSwaggerGen(x =>
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
+        Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "¬ведите токен JWT в формате Bearer {токен}"
+        Description = "¬ведите токен в формате: Bearer {токен}"
     });
 
-    x.AddSecurityRequirement(new OpenApiSecurityRequirement
+    x.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
             new OpenApiSecurityScheme
@@ -48,43 +50,33 @@ builder.Services.AddSwaggerGen(x =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
-            },
-            new string[] {}
+            }, 
+            []
         }
     });
 });
 
-builder.Services.AddCors(x =>
-{
-    x.AddPolicy("AllowAll", policy =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(x =>
     {
-        policy.AllowAnyOrigin()
-          .AllowAnyHeader()
-          .AllowAnyMethod();
+        JwtOptions options = new JwtOptions();
+        builder.Configuration.GetSection(JwtOptions.SectionName).Bind(options);
+
+        x.RequireHttpsMetadata = true;
+        x.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidIssuer = options.Issuer,
+            ValidateAudience = true,
+            ValidAudience = options.Audience,
+            ValidateLifetime = true,
+            IssuerSigningKey = JwtOptions.GetSymmetricSecurityKey(options.Key),
+            ValidateIssuerSigningKey = true,
+        };
     });
-
-});
-
-builder.Services.AddAuthentication(x =>
-{
-    x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie()
-.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, x =>
-{
-    x.RequireHttpsMetadata = false;
-    x.Authority = "http://localhost:8080/auth/realms/kodamma-studio";
-    x.ClientId = "account-hub";
-    x.ClientSecret = "e888146b-4bf9-4b3f-9f04-dd0e41ff35a0";
-    x.ResponseType = "code";
-
-    x.GetClaimsFromUserInfoEndpoint = true;
-    x.SaveTokens = true;
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -92,9 +84,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.MapControllers();
 

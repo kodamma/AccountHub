@@ -8,7 +8,8 @@ using AccountHub.Persistent.Shared;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace AccountHub.Application.Test.Commands.Account
 {
@@ -22,6 +23,7 @@ namespace AccountHub.Application.Test.Commands.Account
         private IConfiguration config;
         private IFileStorageService fileStorageService;
         private IMapper mapper;
+        private Mock<ILogger<AddAccountCommandHandler>> loggerMock;
 
         [TestInitialize]
         public void Initialize()
@@ -30,8 +32,8 @@ namespace AccountHub.Application.Test.Commands.Account
                 .UseInMemoryDatabase("AccountHub.Dev").Options;
             context = new AccountHubDbContext(options);
 
-            IEnumerable<KeyValuePair<string, string?>> pairs = [
-                    new KeyValuePair<string, string?>("Kestrel:MaxAvatarLength", "5242880")];
+            IEnumerable<KeyValuePair<string, string>> pairs = [
+                    new KeyValuePair<string, string>("Kestrel:MaxAvatarLength", "5242880")];
 
             config = new ConfigurationBuilder()
                 .AddInMemoryCollection(pairs).Build();
@@ -45,8 +47,13 @@ namespace AccountHub.Application.Test.Commands.Account
             });
 
             mapper = new Mapper(mappingConf);
+            loggerMock = new Mock<ILogger<AddAccountCommandHandler>>();
 
-            handler = new AddAccountCommandHandler(context, config, fileStorageService, mapper);
+            handler = new AddAccountCommandHandler(context,
+                                                   config,
+                                                   loggerMock.Object,
+                                                   fileStorageService,
+                                                   mapper);
 
             command = new AddAccountCommand()
             {

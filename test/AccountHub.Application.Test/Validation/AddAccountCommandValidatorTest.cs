@@ -13,8 +13,8 @@ namespace AccountHub.Application.Test.Validation
         private AddAccountCommand command;
         public AddAccountCommandValidatorTest()
         {
-            IEnumerable<KeyValuePair<string, string?>> pairs = [
-                    new KeyValuePair<string, string?>("Kestrel:MaxAvatarLength", "5120")];
+            IEnumerable<KeyValuePair<string, string>> pairs = [
+                    new KeyValuePair<string, string>("Kestrel:MaxAvatarLength", "5120")];
             root = new ConfigurationBuilder()
                 .AddInMemoryCollection(pairs).Build();
 
