@@ -1,4 +1,5 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
+using AccountHub.Application.Responses;
 using AccountHub.Application.Shared.Mapping;
 using AccountHub.Application.Shared.ResultHelper;
 using AutoMapper;
@@ -7,7 +8,7 @@ using AccountEntity = AccountHub.Domain.Entities.Account;
 
 namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
 {
-    public class AddAccountCommand : ICommand<Result<Guid>>, IMapWith<AccountEntity>
+    public class AddAccountCommand : ICommand<Result<SignUpAccountResponse>>, IMapWith<AccountEntity>
     {
         public required string Username { get; set; }
         public required string Email { get; set; }
