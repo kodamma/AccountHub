@@ -10,45 +10,49 @@ using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
 using System.Reflection;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddPersistent(builder.Configuration);
-builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddAutoMapper(x =>
+public class Program
 {
-    x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
-    x.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
-});
-
-builder.Services.AddLogging(x =>
-{
-    x.ClearProviders();
-    x.AddConsole();
-    x.AddNLog();
-});
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddCookiePolicy(x =>
-{
-    x.Secure = CookieSecurePolicy.Always;
-    x.HttpOnly = HttpOnlyPolicy.Always;
-    x.MinimumSameSitePolicy = SameSiteMode.Strict;
-});
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(x =>
-{
-    x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    public static void Main(string[] args)
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "¬ведите токен в формате: Bearer { токен }"
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-    x.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
+        builder.Services.AddPersistent(builder.Configuration);
+        builder.Services.AddApplication(builder.Configuration);
+        builder.Services.AddAutoMapper(x =>
+        {
+            x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
+            x.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
+        });
+
+        builder.Services.AddLogging(x =>
+        {
+            x.ClearProviders();
+            x.AddConsole();
+            x.AddNLog();
+        });
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddCookiePolicy(x =>
+        {
+            x.Secure = CookieSecurePolicy.Always;
+            x.HttpOnly = HttpOnlyPolicy.Always;
+            x.MinimumSameSitePolicy = SameSiteMode.Strict;
+        });
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(x =>
+        {
+            x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "¬ведите токен в формате: Bearer { токен }"
+            });
+
+            x.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
         {
             new OpenApiSecurityScheme
             {
@@ -57,45 +61,47 @@ builder.Services.AddSwaggerGen(x =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
-            }, 
+            },
             []
         }
-    });
-});
+            });
+        });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(x =>
-    {
-        JwtOptions options = new JwtOptions();
-        builder.Configuration.GetSection(JwtOptions.SectionName).Bind(options);
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(x =>
+            {
+                JwtOptions options = new JwtOptions();
+                builder.Configuration.GetSection(JwtOptions.SectionName).Bind(options);
 
-        x.RequireHttpsMetadata = true;
-        x.SaveToken = true;
-        x.TokenValidationParameters = new TokenValidationParameters()
+                x.RequireHttpsMetadata = true;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = options.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = options.Audience,
+                    IssuerSigningKey = JwtOptions.GetSymmetricSecurityKey(options.Key),
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                };
+            });
+        builder.Services.AddAuthorization();
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
         {
-            ValidateIssuer = true,
-            ValidIssuer = options.Issuer,
-            ValidateAudience = true,
-            ValidAudience = options.Audience,
-            IssuerSigningKey = JwtOptions.GetSymmetricSecurityKey(options.Key),
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-        };
-    });
-builder.Services.AddAuthorization();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
-var app = builder.Build();
+        app.UseCookiePolicy();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+        app.MapControllers();
+
+        app.Run();
+    }
 }
-
-app.UseCookiePolicy();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
