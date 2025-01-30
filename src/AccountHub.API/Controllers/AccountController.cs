@@ -1,5 +1,6 @@
 ﻿using AccountHub.API.Models;
 using AccountHub.Application.CQRS.Commands.Account.AddAccount;
+using AccountHub.Application.CQRS.Commands.Authentication.Login;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace AccountHub.API.Controllers
             this.httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpPost("signup")]
+        [HttpPost("sign-up")]
         public async Task<IActionResult> SignUp([FromForm] SignUpAccountModel model)
         {
             var result = await mediator.Send(mapper.Map<AddAccountCommand>(model));
@@ -34,8 +35,17 @@ namespace AccountHub.API.Controllers
             return BadRequest(result.Errors);
         }
 
-        [HttpGet]
-        [Authorize]
-        public void Test() => Ok();
+        [HttpPost("sign-in")]
+        public async Task<IActionResult> SignIn([FromForm]SignInAccountModel model)
+        {
+            var result = await mediator.Send(mapper.Map<LoginCommand>(model));
+            if (result.IsSuccess)
+            {
+                httpContextAccessor?.HttpContext!.Response.Cookies
+                    .Append("RefreshToken", result.Value.RefreshToken);
+                return Ok(result.Value);
+            }
+            return BadRequest(result.Errors);
+        }
     }
 }
