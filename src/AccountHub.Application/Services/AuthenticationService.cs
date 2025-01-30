@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
-using System.Text;
+using Kodamma.Common.Base.Utilities;
 using BC = BCrypt.Net.BCrypt;
 
 namespace AccountHub.Application.Services
@@ -16,9 +16,6 @@ namespace AccountHub.Application.Services
         private readonly ITokenGenerator tokenGenerator;
         private readonly ILogger<AuthenticationService> logger;
         private readonly IConfiguration configuration;
-
-        private static readonly Random _random = new Random();
-        private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=+-_*%$#@";
 
         public AuthenticationService(IAccountHubDbContext context,
                                      ITokenGenerator tokenGenerator,
@@ -41,7 +38,7 @@ namespace AccountHub.Application.Services
                 ];
 
             var accessToken = tokenGenerator.Generate(claims, cancellationToken);
-            var refreshToken = GenerateRefreshToken(32);
+            var refreshToken = RandomStringGenerator.Generate(32);
             try
             {
                 var hash = BC.HashPassword(refreshToken);
@@ -61,16 +58,6 @@ namespace AccountHub.Application.Services
                 return ("", "");
             }
             return (accessToken, refreshToken);
-        }
-
-        private static string GenerateRefreshToken(int length)
-        {
-            var result = new StringBuilder(length);
-            for (int i = 0; i < length; i++)
-            {
-                result.Append(_chars[_random.Next(_chars.Length)]);
-            }
-            return result.ToString();
         }
     }
 }

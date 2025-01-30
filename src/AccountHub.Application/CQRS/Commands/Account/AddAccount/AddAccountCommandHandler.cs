@@ -75,6 +75,11 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
 
                         return Result.Success(response);
                     }
+                    else
+                    {
+                        return Result.Failure<SignUpAccountResponse>(validateResult.Errors.Select(x
+                            => new Error(x.ErrorMessage)).ToList());
+                    }
                 }
             }
             catch(Exception)
