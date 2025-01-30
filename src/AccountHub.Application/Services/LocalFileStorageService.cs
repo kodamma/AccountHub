@@ -1,4 +1,5 @@
 ﻿using AccountHub.Domain.Services;
+using Kodamma.Common.Base.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -14,9 +15,11 @@ namespace AccountHub.Application.Services
 
         public async Task<string?> SaveAsync(IFormFile file, CancellationToken cancellationToken)
         {
-            if(file == null)
+            if(file != null)
             {
-                var path = Path.Combine(config["FileStorage"]!, file!.FileName);
+                string newFileName = RandomStringGenerator.Generate(file!.FileName.Length);
+                var extension = Path.GetExtension(file!.FileName);
+                var path = Path.Combine(config["FileStorage"]!, (newFileName + extension));
                 using var stream = new FileStream(path, FileMode.OpenOrCreate);
                 await file.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
                 return path;

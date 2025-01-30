@@ -2,6 +2,7 @@
 using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 namespace AccountHub.Application.Validation
 {
@@ -24,6 +25,9 @@ namespace AccountHub.Application.Validation
             RuleFor(x => x.Avatar)
                 .Must(a => a == null || a?.Length < maxAvatarLenght)
                 .WithMessage("The maximum file size is more than 5 KB");
+            RuleFor(x => x.Avatar)
+                .Must(a => a == null || Regex.IsMatch(Path.GetExtension(a.FileName.ToLower()), @"\.(png|jpe?g)$"))
+                .WithMessage("Invalid file extension. Only .png, .jpeg, and .jpg are allowed. Please select a file with a valid extension.");
         }
 
         private static int CalculateAge(DateOnly date)
