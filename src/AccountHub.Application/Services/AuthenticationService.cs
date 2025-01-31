@@ -7,6 +7,9 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 using Kodamma.Common.Base.Utilities;
 using BC = BCrypt.Net.BCrypt;
+using Microsoft.EntityFrameworkCore;
+using JwtTokenHandler = System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler;
+
 
 namespace AccountHub.Application.Services
 {
@@ -58,6 +61,41 @@ namespace AccountHub.Application.Services
                 return ("", "");
             }
             return (accessToken, refreshToken);
+        }
+
+        public int GetRemainingTime(string token, CancellationToken cancellationToken)
+        {
+            var handler = new JwtTokenHandler();
+            var expTime = handler.ReadToken(token).ValidTo;
+            var beforeTime = handler.ReadToken(token).ValidFrom;
+            var minutes = (expTime - beforeTime);
+            return minutes.Minutes;
+        }
+
+        public async Task<bool> IsTokenRevokedAsync(Guid accountId, CancellationToken cancellationToken)
+        {
+            var token = await context.RefreshTokens.OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync(x
+                => x.AccountId == accountId, cancellationToken);
+            return token!.Revoked;
+        }
+
+        public async Task RefreshTokenRevokeAsync(string token, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var hash = BC.HashPassword(token);
+                RefreshToken? refToken = await context.RefreshTokens.FirstOrDefaultAsync(x
+                    => x.Hash == hash, cancellationToken);
+                if(refToken != null)
+                {
+                    refToken.Revoked = true;
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+            }
         }
     }
 }

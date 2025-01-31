@@ -5,6 +5,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AccountHub.API.Controllers
 {
@@ -30,6 +31,8 @@ namespace AccountHub.API.Controllers
             {
                 httpContextAccessor?.HttpContext!.Response.Cookies
                     .Append("RefreshToken", result.Value.RefreshToken);
+                httpContextAccessor?.HttpContext!.User.Claims.ToList()
+                    .Add(new Claim("Id", result.Value.AccountId.ToString()));
                 return Ok(result.Value);
             }
             return BadRequest(result.Errors);
