@@ -1,4 +1,5 @@
 ﻿using AccountHub.Domain.Base;
+using AccountHub.Domain.Enums;
 
 namespace AccountHub.Domain.Entities
 {
@@ -10,6 +11,7 @@ namespace AccountHub.Domain.Entities
         public string PasswordHash { get; set; } = null!;
         public required DateOnly Birthdate { get; set; }
         public string? AvatarURL { get; set; }
+        public Role Role { get; set; } = Role.User;
         public bool EmailConfirmed { get; set; } = false;
         public bool Locked { get; set; } = false;
         public int LockedCount { get; set; }

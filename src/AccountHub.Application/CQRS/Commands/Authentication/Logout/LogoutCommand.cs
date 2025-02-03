@@ -6,6 +6,7 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Logout
     public class LogoutCommand : ICommand<Result>
     {
         public Guid AccountId { get; set; }
-        public string JwtToken { get; set; } = null!;
+        public string AccessToken { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
     }
 }

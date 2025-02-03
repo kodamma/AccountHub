@@ -31,12 +31,6 @@ public class Program
             x.AddNLog();
         });
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddCookiePolicy(x =>
-        {
-            x.Secure = CookieSecurePolicy.Always;
-            x.HttpOnly = HttpOnlyPolicy.Always;
-            x.MinimumSameSitePolicy = SameSiteMode.Strict;
-        });
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(x =>
@@ -66,7 +60,6 @@ public class Program
         }
             });
         });
-
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(x =>
             {
@@ -96,7 +89,6 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseCookiePolicy();
         app.UseAuthentication();
         app.UseAuthorization();
 

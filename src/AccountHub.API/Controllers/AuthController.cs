@@ -1,7 +1,8 @@
-﻿using AccountHub.Application.CQRS.Commands.Authentication.Logout;
+﻿using AccountHub.Application.CQRS.Commands.Authentication.Login;
+using AccountHub.Domain.Services;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AccountHub.API.Controllers
 {
@@ -9,31 +10,34 @@ namespace AccountHub.API.Controllers
     [Route("account-hub/api/v1/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly IHttpContextAccessor contextAccessor;
         private readonly IMediator mediator;
-        public AuthController(IHttpContextAccessor contextAccessor, IMediator mediator)
+        private readonly IAuthenticationService authService;
+        private readonly IConfiguration conf;
+        public AuthController(IMediator mediator, IAuthenticationService authService, IConfiguration conf)
         {
-            this.contextAccessor = contextAccessor;
+            this.authService = authService;
             this.mediator = mediator;
+            this.conf = conf;
         }
 
-        [HttpPost("logout")]
-        [Authorize]
-        public async Task<IActionResult> Logout()
+        [HttpPost]
+        public async Task<IActionResult> Login([FromForm]LoginCommand command)
         {
-            var accountId = contextAccessor!.HttpContext!.User.Claims.FirstOrDefault(x
-                => x.Type == "Id")!.Value;
-            var header = contextAccessor.HttpContext.Request.Headers["Authorization"].SingleOrDefault();
-            if(header == null || !header.StartsWith("Bearer "))
-                return Unauthorized("JWT token is missing or invalid.");
-
-            var token = header.Substring("Bearer ".Length);
-            var result = await mediator.Send(new LogoutCommand()
+            var result = await mediator.Send(command);
+            if(result.IsSuccess)
             {
-                AccountId = Guid.Parse(accountId),
-                JwtToken = token,
-            });
-            return result.IsSuccess ? Ok() : BadRequest(result.Errors);
+                HttpContext.User.Claims.Append(new Claim("Id", result.Value.AccountId));
+                HttpContext.Response.Cookies
+                    .Append("REFRESH_TOKEN", result.Value.RefreshToken, new CookieOptions()
+                    {
+                        HttpOnly = true,
+                        SameSite = SameSiteMode.Strict,
+                        Secure = true,
+                        Expires = DateTime.UtcNow.AddDays(int.Parse(conf["JWTOptions:RefreshLifetime"]!))
+                    });
+                return Ok(result.Value);
+            }
+            return Unauthorized(result.Errors);
         }
     }
 }

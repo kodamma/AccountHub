@@ -1,9 +1,7 @@
 ﻿using AccountHub.API.Models;
 using AccountHub.Application.CQRS.Commands.Account.AddAccount;
-using AccountHub.Application.CQRS.Commands.Authentication.Login;
 using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -15,37 +13,21 @@ namespace AccountHub.API.Controllers
     {
         private readonly IMapper mapper;
         private readonly IMediator mediator;
-        private readonly IHttpContextAccessor httpContextAccessor;
-        public AccountController(IMapper mapper, IMediator mediator, IHttpContextAccessor httpContextAccessor)
+        private readonly IConfiguration conf;
+        public AccountController(IMapper mapper, IMediator mediator, IConfiguration conf)
         {
             this.mapper = mapper;
             this.mediator = mediator;
-            this.httpContextAccessor = httpContextAccessor;
+            this.conf = conf;
         }
 
         [HttpPost("sign-up")]
-        public async Task<IActionResult> SignUp([FromForm] SignUpAccountModel model)
+        public async Task<IActionResult> SignUp([FromForm]AddAccountCommand command)
         {
-            var result = await mediator.Send(mapper.Map<AddAccountCommand>(model));
+            var result = await mediator.Send(command);
             if(result.IsSuccess)
             {
-                httpContextAccessor?.HttpContext!.Response.Cookies
-                    .Append("RefreshToken", result.Value.RefreshToken);
-                httpContextAccessor?.HttpContext!.User.Claims.ToList()
-                    .Add(new Claim("Id", result.Value.AccountId.ToString()));
-                return Ok(result.Value);
-            }
-            return BadRequest(result.Errors);
-        }
 
-        [HttpPost("sign-in")]
-        public async Task<IActionResult> SignIn([FromForm]SignInAccountModel model)
-        {
-            var result = await mediator.Send(mapper.Map<LoginCommand>(model));
-            if (result.IsSuccess)
-            {
-                httpContextAccessor?.HttpContext!.Response.Cookies
-                    .Append("RefreshToken", result.Value.RefreshToken);
                 return Ok(result.Value);
             }
             return BadRequest(result.Errors);

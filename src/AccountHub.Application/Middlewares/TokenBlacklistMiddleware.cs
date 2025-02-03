@@ -1,22 +1,26 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using System.Security.Claims;
+﻿using AccountHub.Application.Middlewares;
+using AccountHub.Domain.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace AccountHub.Application.Middlewares
 {
     public class TokenBlacklistMiddleware
     {
         private readonly RequestDelegate next;
-        private readonly IDistributedCache cache;
-        public TokenBlacklistMiddleware(RequestDelegate next, IDistributedCache cache)
+        public TokenBlacklistMiddleware(RequestDelegate next)
         {
             this.next = next;
-            this.cache = cache;
         }
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IAuthenticationService authenticationService)
         {
-            Claim? accountId = context.User.Claims.FirstOrDefault(x => x.Type == "Id");
-            
+            await next.Invoke(context);
         }
     }
+}
+
+public static class TokenBlacklistMiddlewareExtension
+{
+    public static IApplicationBuilder UseTokenBlacklist(this IApplicationBuilder app)
+        => app.UseMiddleware<TokenBlacklistMiddleware>();
 }

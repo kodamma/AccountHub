@@ -20,21 +20,18 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
         private readonly ILogger<AddAccountCommandHandler> logger;
         private readonly IFileStorageService fileStorageService;
         private readonly IMapper mapper;
-        private readonly IAuthenticationService authenticationService;
         private readonly AddAccountCommandValidator validator;
         
         public AddAccountCommandHandler(IAccountHubDbContext context,
                                         IConfiguration configuration,
                                         ILogger<AddAccountCommandHandler> logger,
                                         IFileStorageService fileStorageService,
-                                        IMapper mapper,
-                                        IAuthenticationService authenticationService)
+                                        IMapper mapper)
         {
             this.context = context;
             this.logger = logger;
             this.fileStorageService = fileStorageService;
             this.mapper = mapper;
-            this.authenticationService = authenticationService;
             validator = new AddAccountCommandValidator(configuration);
         }
 
@@ -51,8 +48,8 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                     {
                         var salt = BC.GenerateSalt();
                         var hash = BC.HashPassword(request.Password, salt);
-                        account = mapper.Map<AccountEntity>(request);
 
+                        account = mapper.Map<AccountEntity>(request);
                         account.PasswordSalt = salt;
                         account.PasswordHash = hash;
 
@@ -64,13 +61,10 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                         await context.Accounts.AddAsync(account, cancellationToken);
                         await context.SaveChangesAsync(cancellationToken);
 
-                        var tokens = await authenticationService.Authenticate(account, cancellationToken);
                         SignUpAccountResponse response = new SignUpAccountResponse()
                         {
-                            AccountId = account.Id,
-                            Username = request.Username,
-                            Token = tokens.Item1,
-                            RefreshToken = tokens.Item2,
+                            AccountId = account.Id.ToString(),
+                            Username = account.Username
                         };
 
                         return Result.Success(response);
