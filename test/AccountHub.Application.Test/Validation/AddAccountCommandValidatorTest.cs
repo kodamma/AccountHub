@@ -41,7 +41,7 @@ namespace AccountHub.Application.Test.Validation
         public void AddAccountCommandValidator_Must_Fail()
         {
             command.Password = "pass word";
-            command.Birthdate = new DateOnly(2012, 1, DateOnly.FromDateTime(DateTime.Today).Day + 1);
+            command.Birthdate = new DateOnly(2012, 2, DateOnly.FromDateTime(DateTime.Today).Day + 1);
 
             var result = validator.TestValidate(command);
 
