@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AccountHub.API.Models
 {
-    public class SignInAccountModel : IMapWith<LoginCommand>
+    public class LoginAccountModel : IMapWith<LoginCommand>
     {
         [MinLength(6)]
         [MaxLength(254)]
@@ -16,6 +16,6 @@ namespace AccountHub.API.Models
         public required string Password { get; set; }
 
         public void MapTo(Profile profile) 
-            => profile.CreateMap<SignInAccountModel, LoginCommand>();
+            => profile.CreateMap<LoginAccountModel, LoginCommand>();
     }
 }

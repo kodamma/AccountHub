@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Kodamma.Common.Base.Utilities;
 using BC = BCrypt.Net.BCrypt;
 
+
 namespace AccountHub.Application.Services
 {
     public class AuthenticationService : IAuthenticationService
@@ -35,6 +36,7 @@ namespace AccountHub.Application.Services
                     new Claim(JwtRegisteredClaimNames.Email, account.Email),
                     new Claim(JwtRegisteredClaimNames.Sub, account.Email),
                     new Claim(JwtRegisteredClaimNames.Name, account.Username),
+                    new Claim(ClaimTypes.Role, account.Role.ToString())
                 ];
 
             var accessToken = tokenGenerator.Generate(claims, cancellationToken);
@@ -59,5 +61,40 @@ namespace AccountHub.Application.Services
             }
             return (accessToken, refreshToken);
         }
+
+        //public int GetRemainingTime(string token, CancellationToken cancellationToken)
+        //{
+        //    var handler = new JwtTokenHandler();
+        //    var expTime = handler.ReadToken(token).ValidTo;
+        //    var beforeTime = handler.ReadToken(token).ValidFrom;
+        //    var minutes = (expTime - beforeTime);
+        //    return minutes.Minutes;
+        //}
+
+        //public async Task<bool> IsTokenRevokedAsync(Guid accountId, CancellationToken cancellationToken)
+        //{
+        //    var token = await context.RefreshTokens.OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync(x
+        //        => x.AccountId == accountId, cancellationToken);
+        //    return token!.Revoked;
+        //}
+
+        //public async Task RevokeRefreshTokenAsync(string token, CancellationToken cancellationToken)
+        //{
+        //    try
+        //    {
+        //        var hash = BC.HashPassword(token);
+        //        RefreshToken? refToken = await context.RefreshTokens.FirstOrDefaultAsync(x
+        //            => x.Hash == hash, cancellationToken);
+        //        if(refToken != null)
+        //        {
+        //            refToken.Revoked = true;
+        //            await context.SaveChangesAsync(cancellationToken);
+        //        }
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        logger.LogError(ex.Message);
+        //    }
+        //}
     }
 }
