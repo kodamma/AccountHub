@@ -12,6 +12,7 @@
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageReference Include="log4net" Version="3.0.3" />
+    <PackageReference Include="MassTransit" Version="8.3.6" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
@@ -30,6 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Kodamma.Bus.Messages">
+      <HintPath>..\..\..\Lib\Kodamma.Bus.Messages\bin\Debug\net8.0\Kodamma.Bus.Messages.dll</HintPath>
+    </Reference>
     <Reference Include="Kodamma.Common.Base">
       <HintPath>..\Kodamma.Common.Base.dll</HintPath>
     </Reference>

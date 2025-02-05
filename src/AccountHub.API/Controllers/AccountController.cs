@@ -1,12 +1,13 @@
-﻿using AccountHub.API.Models;
-using AccountHub.Application.CQRS.Commands.Account.AddAccount;
+﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
+using AccountHub.Application.CQRS.Commands.Account.ConfirmEmail;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AccountHub.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("account-hub/api/v1/accounts")]
     public class AccountController : ControllerBase
@@ -21,6 +22,7 @@ namespace AccountHub.API.Controllers
             this.conf = conf;
         }
 
+        [AllowAnonymous]
         [HttpPost("sign-up")]
         public async Task<IActionResult> SignUp([FromForm]AddAccountCommand command)
         {
@@ -31,6 +33,13 @@ namespace AccountHub.API.Controllers
                 return Ok(result.Value);
             }
             return BadRequest(result.Errors);
+        }
+
+        [HttpPost("confirm-email/{id:guid}")]
+        public async Task<IActionResult> ConfirmEmail(Guid id)
+        {
+            var result = await mediator.Send(new ConfirmEmailCommand() { AccountId = id});
+            return Ok();
         }
     }
 }
