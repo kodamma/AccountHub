@@ -1,4 +1,6 @@
 ﻿using AccountHub.Application.Interfaces;
+using Kodamma.Bus.Messages.Identity;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,9 +19,21 @@ namespace AccountHub.Persistent.Shared
             services.AddScoped<IAccountHubDbContext>(x => x.GetRequiredService<AccountHubDbContext>());
             services.AddStackExchangeRedisCache(x =>
             {
-                var sectionName = config.GetSection("ConnectionStrings:Redis");
-                x.InstanceName = sectionName["Instance"];
-                x.Configuration = sectionName["Host"];
+                var section = config.GetSection("ConnectionStrings:Redis");
+                x.InstanceName = section["Instance"];
+                x.Configuration = section["Host"];
+            });
+            services.AddMassTransit(x =>
+            {
+                var section = config.GetSection("RabbitMq");
+                x.UsingRabbitMq((context, c) =>
+                {
+                    c.Host("localhost", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+                });
             });
             return services;
         }
