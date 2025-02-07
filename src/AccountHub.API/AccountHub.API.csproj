@@ -13,6 +13,7 @@
     <PackageReference Include="JWT" Version="11.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="NLog" Version="5.3.4" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.3.15" />
@@ -23,6 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="..\AccountHub.Application\AccountHub.Application.csproj" />
     <ProjectReference Include="..\AccountHub.Persistent\AccountHub.Persistent.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Kodamma.Common.Base">
+      <HintPath>..\..\..\Lib\Kodamma.Common.Base\bin\Debug\net8.0\Kodamma.Common.Base.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
