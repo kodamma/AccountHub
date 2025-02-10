@@ -25,6 +25,8 @@ namespace AccountHub.Application.Test.Validation
                 Email = "user@mail.ru",
                 Password = "password",
                 Birthdate = new DateOnly(2012, 1, 1),
+                Region = "Russia",
+                IsAgree = true,
                 Avatar = null
             };
         }

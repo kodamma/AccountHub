@@ -4,7 +4,7 @@ using AccountHub.Application.Responses;
 using AccountHub.Application.Validation;
 using AccountHub.Domain.Services;
 using AutoMapper;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

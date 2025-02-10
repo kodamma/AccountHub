@@ -2,7 +2,6 @@
 using AccountHub.Application.CQRS.Commands.Authentication.Login;
 using AccountHub.Application.Options;
 using AccountHub.Application.Responses;
-using MassTransit.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

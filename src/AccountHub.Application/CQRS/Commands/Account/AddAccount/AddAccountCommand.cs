@@ -2,7 +2,7 @@
 using AccountHub.Application.Responses;
 using AutoMapper;
 using Kodamma.Common.Base.Mapping;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,6 +25,8 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
         public required string Password { get; set; }
         public required DateOnly Birthdate { get; set; }
         public IFormFile? Avatar { get; set; }
+        public required string Region { get; set; }
+        public bool IsAgree { get; set; } 
 
         public void MapTo(Profile profile)
             => profile.CreateMap<AddAccountCommand, AccountEntity>()

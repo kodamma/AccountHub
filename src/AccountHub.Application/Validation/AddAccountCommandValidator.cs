@@ -28,6 +28,8 @@ namespace AccountHub.Application.Validation
             RuleFor(x => x.Avatar)
                 .Must(a => a == null || Regex.IsMatch(Path.GetExtension(a.FileName.ToLower()), @"\.(png|jpe?g)$"))
                 .WithMessage("Invalid file extension. Only .png, .jpeg, and .jpg are allowed. Please select a file with a valid extension.");
+            RuleFor(x => x.IsAgree)
+                .Must(a => a == true);
         }
 
         private static int CalculateAge(DateOnly date)

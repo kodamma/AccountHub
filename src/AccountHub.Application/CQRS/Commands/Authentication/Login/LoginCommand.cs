@@ -1,6 +1,6 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Responses;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
