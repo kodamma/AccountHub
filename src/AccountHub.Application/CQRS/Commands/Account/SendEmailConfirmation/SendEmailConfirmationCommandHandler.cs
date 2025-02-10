@@ -1,7 +1,7 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Interfaces;
 using Kodamma.Bus.Messages.Identity;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

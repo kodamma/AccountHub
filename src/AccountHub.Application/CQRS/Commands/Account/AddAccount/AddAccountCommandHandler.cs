@@ -4,7 +4,7 @@ using AccountHub.Application.Responses;
 using AccountHub.Application.Validation;
 using AccountHub.Domain.Services;
 using AutoMapper;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -76,9 +76,9 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                     }
                 }
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-
+                logger.LogError(ex.Message);
             }
             return Result.Failure<SignUpAccountResponse>([new Error("A user with such an email already exists.")]);
         }

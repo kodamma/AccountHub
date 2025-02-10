@@ -1,5 +1,5 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 
 namespace AccountHub.Application.CQRS.Commands.Account.SendEmailConfirmation
 {

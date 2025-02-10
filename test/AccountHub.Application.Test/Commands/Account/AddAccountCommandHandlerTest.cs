@@ -4,6 +4,7 @@ using AccountHub.Application.Services;
 using AccountHub.Domain.Services;
 using AccountHub.Persistent.Shared;
 using AutoMapper;
+using Kodamma.Common.Base.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,72 +12,70 @@ using Moq;
 
 namespace AccountHub.Application.Test.Commands.Account
 {
-//    [TestClass]
-//    public class AddAccountCommandHandlerTest
-//    {
-//        private AddAccountCommandHandler handler;
-//        private AddAccountCommand command;
+    [TestClass]
+    public class AddAccountCommandHandlerTest
+    {
+        private AddAccountCommandHandler handler;
+        private AddAccountCommand command;
 
-//        private AccountHubDbContext context;
-//        private IConfiguration config;
-//        private IFileStorageService fileStorageService;
-//        private IMapper mapper;
-//        private Mock<ILogger<AddAccountCommandHandler>> loggerMock;
+        private AccountHubDbContext context;
+        private IConfiguration config;
+        private IFileStorageService fileStorageService;
+        private IMapper mapper;
+        private Mock<ILogger<AddAccountCommandHandler>> loggerMock;
 
-//        [TestInitialize]
-//        public void Initialize()
-//        {
-//            var options = new DbContextOptionsBuilder<AccountHubDbContext>()
-//                .UseInMemoryDatabase("AccountHub.Dev").Options;
-//            context = new AccountHubDbContext(options);
+        [TestInitialize]
+        public void Initialize()
+        {
+            var options = new DbContextOptionsBuilder<AccountHubDbContext>()
+                .UseInMemoryDatabase("AccountHub.Dev").Options;
+            context = new AccountHubDbContext(options);
 
-//            IEnumerable<KeyValuePair<string, string>> pairs = [
-//                    new KeyValuePair<string, string>("Kestrel:MaxAvatarLength", "5242880")];
+            IEnumerable<KeyValuePair<string, string>> pairs = [
+                    new KeyValuePair<string, string>("Kestrel:MaxAvatarLength", "5242880")];
 
-//            config = new ConfigurationBuilder()
-//                .AddInMemoryCollection(pairs).Build();
+            config = new ConfigurationBuilder()
+                .AddInMemoryCollection(pairs).Build();
 
-//            fileStorageService = new LocalFileStorageService(config);
+            fileStorageService = new LocalFileStorageService(config);
 
-//            var mappingConf = new MapperConfiguration(x =>
-//            {
-//                x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
-//                x.AddProfile(new AssemblyMappingProfile(typeof(SignUpAccountModel).Assembly));
-//            });
+            var mappingConf = new MapperConfiguration(x =>
+            {
+                x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
+            });
 
-//            mapper = new Mapper(mappingConf);
-//            loggerMock = new Mock<ILogger<AddAccountCommandHandler>>();
+            mapper = new Mapper(mappingConf);
+            loggerMock = new Mock<ILogger<AddAccountCommandHandler>>();
 
-//            var authenticationServiceMock = new Mock<IAuthenticationService>();
-//            authenticationServiceMock.Setup(x 
-//                => x.Authenticate(It.IsAny<Domain.Entities.Account>(), new CancellationToken()))
-//                .ReturnsAsync(("token", "token"));
+            var authenticationServiceMock = new Mock<IAuthenticationService>();
+            authenticationServiceMock.Setup(x
+                => x.Authenticate(It.IsAny<Domain.Entities.Account>(), new CancellationToken()))
+                .ReturnsAsync(("token", "token"));
 
-//            handler = new AddAccountCommandHandler(context,
-//                                                   config,
-//                                                   loggerMock.Object,
-//                                                   fileStorageService,
-//                                                   mapper,
-//                                                   authenticationServiceMock.Object);
+            handler = new AddAccountCommandHandler(context,
+                                                   config,
+                                                   loggerMock.Object,
+                                                   fileStorageService,
+                                                   mapper);
 
-//            command = new AddAccountCommand()
-//            {
-//                Username = "user1",
-//                Email = "user@mail.ru",
-//                Password = "password",
-//                Birthdate = new DateOnly(2001, 1, 1),
-//                Avatar = null
-//            };
-//        }
+            command = new AddAccountCommand()
+            {
+                Username = "user1",
+                Email = "user@mail.ru",
+                Password = "password",
+                Birthdate = new DateOnly(2001, 1, 1),
+                Region = "Russia",
+                IsAgree = true,
+                Avatar = null
+            };
+        }
 
-//        [TestMethod]
-//        public async Task AddAccountCommandHandler_Must_Success()
-//        {
-//            var result = await handler.Handle(command, new CancellationToken());
+        [TestMethod]
+        public async Task AddAccountCommandHandler_Must_Success()
+        {
+            var result = await handler.Handle(command, new CancellationToken());
 
-//            Assert.IsTrue(result.IsSuccess);
-//            Assert.IsNotNull(result.Value.Token);
-//            Assert.IsNotNull(result.Value.RefreshToken);
-//        }
-//    }
+            Assert.IsTrue(result.IsSuccess);
+        }
+    }
 }

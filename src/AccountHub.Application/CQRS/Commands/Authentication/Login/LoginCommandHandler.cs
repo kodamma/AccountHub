@@ -1,9 +1,8 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Interfaces;
 using AccountHub.Application.Responses;
-using Kodamma.Common.Base.ResultUtilities;
+using Kodamma.Common.Base.ResultHelper;
 using AccountHub.Domain.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using AccountEntity = AccountHub.Domain.Entities.Account;
@@ -16,16 +15,13 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Login
         private readonly IAccountHubDbContext context;
         private readonly ILogger<LoginCommandHandler> logger;
         private readonly IAuthenticationService authenticationService;
-        private readonly IHttpContextAccessor httpContext;
         public LoginCommandHandler(IAccountHubDbContext context,
                                    ILogger<LoginCommandHandler> logger,
-                                   IAuthenticationService authenticationService,
-                                   IHttpContextAccessor httpContext)
+                                   IAuthenticationService authenticationService)
         {
             this.context = context;
             this.logger = logger;
             this.authenticationService = authenticationService;
-            this.httpContext = httpContext;
         }
 
         public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -49,10 +45,9 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Login
             catch(Exception ex)
             {
                 logger.LogError(ex.Message);
-                return Result.Failure<AuthResponse>(
-                    [new Error($"The user could not be authenticated due to: {ex.Message}")]);
             }
-            return Result.Failure<AuthResponse>([new Error("There is no user with such an email address.")]);
+            return Result.Failure<AuthResponse>(
+                [new Error("The user with this email address does not exist or the password is incorrect.")]);
         }
     }
 }
