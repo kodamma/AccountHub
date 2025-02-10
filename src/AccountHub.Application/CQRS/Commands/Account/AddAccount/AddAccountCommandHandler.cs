@@ -13,74 +13,75 @@ using BC = BCrypt.Net.BCrypt;
 
 namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
 {
-    public class AddAccountCommandHandler 
+    public class AddAccountCommandHandler
         : ICommandHandler<AddAccountCommand, Result<SignUpAccountResponse>>
     {
-        private readonly IAccountHubDbContext context;
-        private readonly ILogger<AddAccountCommandHandler> logger;
         private readonly IFileStorageService fileStorageService;
+        private readonly IAccountHubDbContext context;
         private readonly IMapper mapper;
+        private readonly ILogger<AddAccountCommandHandler> logger;
+
         private readonly AddAccountCommandValidator validator;
-        
         public AddAccountCommandHandler(IAccountHubDbContext context,
-                                        IConfiguration configuration,
-                                        ILogger<AddAccountCommandHandler> logger,
                                         IFileStorageService fileStorageService,
-                                        IMapper mapper)
+                                        IConfiguration conf,
+                                        IMapper mapper,
+                                        ILogger<AddAccountCommandHandler> logger)
         {
-            this.context = context;
-            this.logger = logger;
             this.fileStorageService = fileStorageService;
+            this.context = context;
             this.mapper = mapper;
-            validator = new AddAccountCommandValidator(configuration);
+            this.logger = logger;
+            validator = new AddAccountCommandValidator(conf);
         }
 
-        public async Task<Result<SignUpAccountResponse>> Handle(AddAccountCommand request, CancellationToken cancellationToken)
+        public async Task<Result<SignUpAccountResponse>> Handle(AddAccountCommand request,
+                                                                CancellationToken cancellationToken)
         {
+            AccountEntity? account = null;
             try
             {
-                AccountEntity? account = await context.Accounts.FirstOrDefaultAsync(x
+                account = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(x
                     => x.Email == request.Email, cancellationToken);
-                if(account == null)
-                {
-                    var validateResult = validator.Validate(request);
-                    if(validateResult.IsValid)
-                    {
-                        var salt = BC.GenerateSalt();
-                        var hash = BC.HashPassword(request.Password, salt);
 
-                        account = mapper.Map<AccountEntity>(request);
-                        account.PasswordSalt = salt;
-                        account.PasswordHash = hash;
+                if (account != null)
+                    return Result.Failure<SignUpAccountResponse>(
+                        [new Error("A user with such an email already exists")]);
 
-                        if(request.Avatar != null)
-                        {
-                            account.AvatarURL = await fileStorageService.SaveAsync(request.Avatar, cancellationToken);
-                        }
+                var validationResult = await validator.ValidateAsync(request, cancellationToken);
+                if (!validationResult.IsValid)
+                    return Result.Failure<SignUpAccountResponse>(
+                        validationResult.Errors.Select(x => new Error(x.ErrorMessage)).ToArray());
 
-                        await context.Accounts.AddAsync(account, cancellationToken);
-                        await context.SaveChangesAsync(cancellationToken);
+                account = mapper.Map<AccountEntity>(request);
 
-                        SignUpAccountResponse response = new SignUpAccountResponse()
-                        {
-                            AccountId = account.Id.ToString(),
-                            Username = account.Username
-                        };
+                var salt = BC.GenerateSalt();
+                var hash = BC.HashPassword(request.Password, salt);
+                account.PasswordSalt = salt;
+                account.PasswordHash = hash;
 
-                        return Result.Success(response);
-                    }
-                    else
-                    {
-                        return Result.Failure<SignUpAccountResponse>(validateResult.Errors.Select(x
-                            => new Error(x.ErrorMessage)).ToList());
-                    }
-                }
+                account.AvatarURL = await fileStorageService.SaveAsync(request.Avatar, cancellationToken);
+
+                await context.Accounts.AddAsync(account);
+                await context.SaveChangesAsync(cancellationToken);
+
+                logger.LogInformation($"AccountCreated: "
+                                      + $"Id={account.Id}, "
+                                      + $"Username={account.Username}, "
+                                      + $"Email={account.Email}, "
+                                      + $"Role={account.Role}");
             }
             catch(Exception ex)
             {
                 logger.LogError(ex.Message);
             }
-            return Result.Failure<SignUpAccountResponse>([new Error("A user with such an email already exists.")]);
+
+            SignUpAccountResponse response = new SignUpAccountResponse()
+            {
+                AccountId = account!.Id,
+                Username = account.Username,
+            };
+            return Result.Success(response);
         }
     }
 }

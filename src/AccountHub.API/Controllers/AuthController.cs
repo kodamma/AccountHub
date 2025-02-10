@@ -1,15 +1,11 @@
 ﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using AccountHub.Application.CQRS.Commands.Authentication.Login;
-using AccountHub.Application.CQRS.Commands.Authentication.Logout;
 using AccountHub.Application.Options;
 using AccountHub.Application.Responses;
 using Kodamma.Common.Base.API;
-using MediatR;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Security.Claims;
 
 namespace AccountHub.API.Controllers
 {
@@ -24,49 +20,33 @@ namespace AccountHub.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("sign-up")]
-        public async Task<ActionResult<SignUpAccountResponse>> SignUp([FromForm] AddAccountCommand command)
+        public async Task<ActionResult<SignUpAccountResponse>> SignUp(
+            [FromForm] AddAccountCommand command)
         {
             var result = await Mediator.Send(command);
             return result.IsSuccess 
                 ? Ok(result.Value) : BadRequest(result.Errors);
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] LoginCommand command)
-        {
-            var result = await Mediator.Send(command);
-            if(result.IsFailure) 
-                return BadRequest(result.Errors);
+        
 
-            CookieOptions cookieOptions = new CookieOptions()
-            {
-                SameSite = SameSiteMode.Lax,
-                HttpOnly = true,
-                Secure = true,
-                Expires = DateTime.UtcNow.AddDays(int.Parse(options.LifeTime.ToString()))
-            };
+        //[HttpPost("logout")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    var accessToken = Request.Headers["Authorization"]!.ToString()
+        //        .Substring("Bearer ".Length);
+        //    var refToken = Request.Cookies["KS_REF_TOKEN"];
 
-            Response.Cookies.Append("KS_REF_TOKEN", result.Value.RefreshToken, cookieOptions);  
-            return Ok(result.Value);
-        }
+        //    var result = await Mediator.Send(new LogoutCommand()
+        //    {
+        //        AccountId = UserId,
+        //        AccessToken = accessToken,
+        //        RefreshToken = refToken ?? string.Empty,
+        //    });
 
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            var accessToken = Request.Headers["Authorization"]!.ToString()
-                .Substring("Bearer ".Length);
-            var refToken = Request.Cookies["KS_REF_TOKEN"];
+        //    if (result.IsFailure) return BadRequest(result.Errors);
 
-            var result = await Mediator.Send(new LogoutCommand()
-            {
-                AccountId = UserId,
-                AccessToken = accessToken,
-                RefreshToken = refToken ?? string.Empty,
-            });
-
-            if (result.IsFailure) return BadRequest(result.Errors);
-
-            return Ok();
-        }
+        //    return Ok();
+        //}
     }
 }

@@ -1,10 +1,10 @@
 ﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using AccountHub.Application.Interfaces;
-using AccountHub.Application.Services;
 using AccountHub.Domain.Services;
 using AccountHub.Persistent.Shared;
 using AutoMapper;
 using Kodamma.Common.Base.Mapping;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -19,9 +19,9 @@ namespace AccountHub.Application.Test.Commands.Account
         private AddAccountCommand command;
 
         private AccountHubDbContext context;
-        private IConfiguration config;
-        private IFileStorageService fileStorageService;
+        private IConfiguration conf;
         private IMapper mapper;
+        private Mock<IFileStorageService> fileServiceMock;
         private Mock<ILogger<AddAccountCommandHandler>> loggerMock;
 
         [TestInitialize]
@@ -30,38 +30,37 @@ namespace AccountHub.Application.Test.Commands.Account
             var options = new DbContextOptionsBuilder<AccountHubDbContext>()
                 .UseInMemoryDatabase("AccountHub.Dev").Options;
             context = new AccountHubDbContext(options);
+            context.Accounts.Add(new Domain.Entities.Account()
+            {
+                Username = "user1",
+                Email = "user1@mail.ru",
+                Birthdate = new DateOnly(1999, 5, 5),
+                PasswordHash = "somehash",
+                PasswordSalt = "somesalt"
+            });
+            context.SaveChanges();
 
             IEnumerable<KeyValuePair<string, string>> pairs = [
                     new KeyValuePair<string, string>("Kestrel:MaxAvatarLength", "5242880")];
 
-            config = new ConfigurationBuilder()
+            conf = new ConfigurationBuilder()
                 .AddInMemoryCollection(pairs).Build();
 
-            fileStorageService = new LocalFileStorageService(config);
+            fileServiceMock = new Mock<IFileStorageService>();
+            fileServiceMock.Setup(x => x.SaveAsync(It.IsAny<IFormFile>(), default));
 
-            var mappingConf = new MapperConfiguration(x =>
-            {
-                x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
-            });
+            var mappingConf = new MapperConfiguration(x
+                => x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly)));
 
             mapper = new Mapper(mappingConf);
             loggerMock = new Mock<ILogger<AddAccountCommandHandler>>();
 
-            var authenticationServiceMock = new Mock<IAuthenticationService>();
-            authenticationServiceMock.Setup(x
-                => x.Authenticate(It.IsAny<Domain.Entities.Account>(), new CancellationToken()))
-                .ReturnsAsync(("token", "token"));
-
-            handler = new AddAccountCommandHandler(context,
-                                                   config,
-                                                   loggerMock.Object,
-                                                   fileStorageService,
-                                                   mapper);
+            handler = new AddAccountCommandHandler(context, fileServiceMock.Object, conf, mapper, loggerMock.Object);
 
             command = new AddAccountCommand()
             {
-                Username = "user1",
-                Email = "user@mail.ru",
+                Username = "user2",
+                Email = "user2@mail.ru",
                 Password = "password",
                 Birthdate = new DateOnly(2001, 1, 1),
                 Region = "Russia",
@@ -76,6 +75,18 @@ namespace AccountHub.Application.Test.Commands.Account
             var result = await handler.Handle(command, new CancellationToken());
 
             Assert.IsTrue(result.IsSuccess);
+            Assert.IsNotNull(result.Value);
+        }
+
+        [TestMethod]
+        public async Task AddAccountCommandHandler_Must_Fail()
+        {
+            command.Email = "user1@mail.ru";
+
+            var result = await handler.Handle(command, new CancellationToken());
+
+            Assert.IsTrue(result.IsFailure);
+            Assert.IsTrue(result.Errors.Any());
         }
     }
 }

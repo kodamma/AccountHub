@@ -2,7 +2,7 @@
 {
     public class SignUpAccountResponse
     {
-        public string AccountId { get; set; } = null!;
-        public string Username { get; set; } = null!;
+        public required Guid AccountId { get; set; } 
+        public required string Username { get; set; }
     }
 }

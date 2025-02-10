@@ -4,6 +4,6 @@ namespace AccountHub.Domain.Services
 {
     public interface IFileStorageService
     {
-        Task<string?> SaveAsync(IFormFile file, CancellationToken cancellationToken);
+        ValueTask<string> SaveAsync(IFormFile? file, CancellationToken cancellationToken);
     }
 }

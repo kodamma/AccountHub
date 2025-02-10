@@ -1,53 +1,33 @@
-﻿using AccountHub.Application.CQRS.Extensions;
-using AccountHub.Application.Interfaces;
-using AccountHub.Application.Responses;
-using Kodamma.Common.Base.ResultHelper;
-using AccountHub.Domain.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using AccountEntity = AccountHub.Domain.Entities.Account;
-using BC = BCrypt.Net.BCrypt;
+﻿//using AccountHub.Application.CQRS.Extensions;
+//using AccountHub.Application.Interfaces;
+//using AccountHub.Application.Responses;
+//using Kodamma.Common.Base.ResultHelper;
+//using AccountHub.Domain.Services;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.Extensions.Logging;
+//using AccountEntity = AccountHub.Domain.Entities.Account;
+//using BC = BCrypt.Net.BCrypt;
 
-namespace AccountHub.Application.CQRS.Commands.Authentication.Login
-{
-    public class LoginCommandHandler : ICommandHandler<LoginCommand, Result<AuthResponse>>
-    {
-        private readonly IAccountHubDbContext context;
-        private readonly ILogger<LoginCommandHandler> logger;
-        private readonly IAuthenticationService authenticationService;
-        public LoginCommandHandler(IAccountHubDbContext context,
-                                   ILogger<LoginCommandHandler> logger,
-                                   IAuthenticationService authenticationService)
-        {
-            this.context = context;
-            this.logger = logger;
-            this.authenticationService = authenticationService;
-        }
+//namespace AccountHub.Application.CQRS.Commands.Authentication.Login
+//{
+//    public class LoginCommandHandler : ICommandHandler<LoginCommand, Result<AuthResponse>>
+//    {
+//        private readonly ILogger<LoginCommandHandler> logger;
+//        public LoginCommandHandler(ILogger<LoginCommandHandler> logger)
+//        {
+//            this.logger = logger;
+//        }
 
-        public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                AccountEntity? account = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(x
-                    => x.Email == request.Email, cancellationToken);   
-                if(account != null && BC.Verify(request.Password, account.PasswordHash))
-                {
-                    var tokens = await authenticationService.Authenticate(account, cancellationToken);
-                    AuthResponse response = new AuthResponse()
-                    {
-                        AccountId = account.Id.ToString(),
-                        AccessToken = tokens.Item1,
-                        RefreshToken = tokens.Item2,
-                    };
-                    return Result.Success(response);
-                }
-            }
-            catch(Exception ex)
-            {
-                logger.LogError(ex.Message);
-            }
-            return Result.Failure<AuthResponse>(
-                [new Error("The user with this email address does not exist or the password is incorrect.")]);
-        }
-    }
-}
+//        public Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+//        {
+//            try
+//            {
+
+//            }
+//            catch(Exception ex)
+//            {
+//                logger.LogError(ex.Message);
+//            }
+//        }
+//    }
+//}

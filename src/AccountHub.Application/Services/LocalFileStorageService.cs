@@ -13,7 +13,7 @@ namespace AccountHub.Application.Services
             this.config = config;
         }
 
-        public async Task<string?> SaveAsync(IFormFile file, CancellationToken cancellationToken)
+        public async ValueTask<string> SaveAsync(IFormFile? file, CancellationToken cancellationToken)
         {
             if(file != null)
             {
@@ -24,7 +24,7 @@ namespace AccountHub.Application.Services
                 await file.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
                 return path;
             }
-            return null;
+            return string.Empty;
         }
     }
 }
