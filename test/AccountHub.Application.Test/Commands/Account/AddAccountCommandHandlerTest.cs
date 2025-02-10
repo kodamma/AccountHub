@@ -1,8 +1,6 @@
-﻿using AccountHub.API.Models;
-using AccountHub.Application.CQRS.Commands.Account.AddAccount;
+﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using AccountHub.Application.Interfaces;
 using AccountHub.Application.Services;
-using AccountHub.Application.Shared.Mapping;
 using AccountHub.Domain.Services;
 using AccountHub.Persistent.Shared;
 using AutoMapper;

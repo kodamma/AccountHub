@@ -1,5 +1,5 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
-using AccountHub.Application.Shared.ResultHelper;
+using Kodamma.Common.Base.ResultUtilities;
 
 namespace AccountHub.Application.CQRS.Commands.Authentication.Logout
 {

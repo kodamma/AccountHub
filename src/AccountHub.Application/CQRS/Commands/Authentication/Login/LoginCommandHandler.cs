@@ -1,7 +1,7 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Interfaces;
 using AccountHub.Application.Responses;
-using AccountHub.Application.Shared.ResultHelper;
+using Kodamma.Common.Base.ResultUtilities;
 using AccountHub.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

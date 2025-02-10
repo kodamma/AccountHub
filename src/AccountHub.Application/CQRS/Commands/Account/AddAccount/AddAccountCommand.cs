@@ -1,8 +1,8 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Responses;
-using AccountHub.Application.Shared.Mapping;
-using AccountHub.Application.Shared.ResultHelper;
 using AutoMapper;
+using Kodamma.Common.Base.Mapping;
+using Kodamma.Common.Base.ResultUtilities;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

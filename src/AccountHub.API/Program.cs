@@ -1,10 +1,9 @@
 using AccountHub.Application.Interfaces;
 using AccountHub.Application.Options;
 using AccountHub.Application.Shared;
-using AccountHub.Application.Shared.Mapping;
 using AccountHub.Persistent.Shared;
+using Kodamma.Common.Base.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;

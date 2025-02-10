@@ -1,6 +1,6 @@
 ﻿using AccountHub.Application.CQRS.Extensions;
-using AccountHub.Application.Shared.ResultHelper;
 using AccountHub.Domain.Services;
+using Kodamma.Common.Base.ResultUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace AccountHub.Application.CQRS.Commands.Authentication.Logout
