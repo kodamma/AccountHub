@@ -76,9 +76,9 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                     }
                 }
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-
+                logger.LogError(ex.Message);
             }
             return Result.Failure<SignUpAccountResponse>([new Error("A user with such an email already exists.")]);
         }

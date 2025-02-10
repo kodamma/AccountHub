@@ -72,5 +72,17 @@ namespace AccountHub.Application.Test.Commands.Account
             Assert.IsNotNull(result.Value.AccessToken);
             Assert.IsNotNull(result.Value.RefreshToken);
         }
+
+        [TestMethod]
+        public async Task Authenticate_Must_Fail()
+        {
+            var result = await handler.Handle(new LoginCommand()
+            {
+                Email = "user@mail.ru",
+                Password = "qwerty12345"
+            }, new CancellationToken());
+
+            Assert.IsFalse(result.IsSuccess);
+        }
     }
 }

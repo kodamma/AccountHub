@@ -3,7 +3,6 @@ using AccountHub.Application.Interfaces;
 using AccountHub.Application.Responses;
 using Kodamma.Common.Base.ResultHelper;
 using AccountHub.Domain.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using AccountEntity = AccountHub.Domain.Entities.Account;
@@ -46,10 +45,9 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Login
             catch(Exception ex)
             {
                 logger.LogError(ex.Message);
-                return Result.Failure<AuthResponse>(
-                    [new Error($"The user could not be authenticated due to: {ex.Message}")]);
             }
-            return Result.Failure<AuthResponse>([new Error("There is no user with such an email address.")]);
+            return Result.Failure<AuthResponse>(
+                [new Error("The user with this email address does not exist or the password is incorrect.")]);
         }
     }
 }

@@ -18,10 +18,13 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Logout
         {
             try
             {
-                //var minutes = authenticationService.GetRemainingTime(request.AccessToken, cancellationToken);
-                //if (minutes > 3)
-                //    await cache.SetStringAsync(request.AccountId.ToString(), request.AccessToken);
-                //await authenticationService.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
+                if(authenticationService.GetRemainingTime(request.AccessToken) > 3)
+                {
+                    await cache.SetStringAsync(request.AccountId.ToString(), request.AccessToken);
+                }
+                await authenticationService
+                    .RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
+                
             }
             catch (Exception)
             {
