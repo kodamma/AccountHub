@@ -4,9 +4,9 @@ namespace AccountHub.Application.Responses
 {
     public class AuthResponse
     {
-        public string AccountId { get; set; } = null!;
-        public string AccessToken { get; set; } = null!;
+        public required Guid AccountId { get; set; }
+        public required string AccessToken { get; set; } 
         [JsonIgnore]
-        public string RefreshToken { get; set; } = null!;
+        public required string RefreshToken { get; set; } 
     }
 }

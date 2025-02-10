@@ -1,12 +1,12 @@
 ﻿using AccountHub.Application.Interfaces;
+using AccountHub.Application.Options;
 using AccountHub.Domain.Entities;
 using AccountHub.Domain.Services;
-using Kodamma.Common.Base.Utilities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using BC = BCrypt.Net.BCrypt;
 
 
@@ -15,89 +15,51 @@ namespace AccountHub.Application.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IAccountHubDbContext context;
-        private readonly ITokenGenerator tokenGenerator;
-        private readonly ILogger<AuthenticationService> logger;
-        private readonly IConfiguration configuration;
-
-        public AuthenticationService(IAccountHubDbContext context,
-                                     ITokenGenerator tokenGenerator,
-                                     ILogger<AuthenticationService> logger,
-                                     IConfiguration configuration)
+        private readonly JwtOptions options;
+        public AuthenticationService(IAccountHubDbContext context, IOptions<JwtOptions> options)
         {
             this.context = context;
-            this.logger = logger;
-            this.tokenGenerator = tokenGenerator;
-            this.configuration = configuration;
+            this.options = options.Value;
         }
 
-        public async Task<(string,string)> Authenticate(Account account, CancellationToken cancellationToken)
+        public string GenerateAccessToken(ClaimsIdentity identity)
         {
-            List<Claim> claims = [
-                    new Claim("Id", account.Id.ToString()),
-                    new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email, account.Email),
-                    new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, account.Email),
-                    new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Name, account.Username),
-                    new Claim(ClaimTypes.Role, account.Role.ToString())
-                ];
-
-            var accessToken = tokenGenerator.Generate(claims, cancellationToken);
-            var refreshToken = RandomStringGenerator.Generate(32);
-            try
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityKey = JwtOptions.GetSymmetricSecurityKey(options.Key);
+            var tokenDescriptor = new SecurityTokenDescriptor()
             {
-                var hash = BC.HashPassword(refreshToken);
-                var lifetime = configuration["JWTOptions:RefreshLifetime"];
-                RefreshToken token = new RefreshToken()
-                {
-                    AccountId = account.Id,
-                    Hash = hash,
-                    ExpiresAt = DateTime.UtcNow.AddDays(Convert.ToInt32(lifetime)),
-                };
-                await context.RefreshTokens.AddAsync(token);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            catch (Exception ex) 
-            {
-                logger.LogError($"The token could not be saved due to: {ex.Message}");
-                return ("", "");
-            }
-            return (accessToken, refreshToken);
+                Issuer = options.Issuer,
+                Audience = options.Audience,
+                Subject = identity,
+                NotBefore = DateTime.Now,
+                Expires = DateTime.Now.AddMinutes(options.LifeTime),
+                SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
-        public int GetRemainingTime(string token)
+        public async Task<string> GenerateRefreshToken(Guid accountId,
+                                                       int length = 32,
+                                                       CancellationToken cancellationToken = default)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var expTime = handler.ReadToken(token).ValidTo;
-            var beforeTime = handler.ReadToken(token).ValidFrom;
-            var minutes = (expTime - beforeTime);
-            return minutes.Minutes;
-        }
-
-        public async Task<bool> IsTokenRevokedAsync(Guid accountId, CancellationToken cancellationToken)
-        {
-            var token = await context.RefreshTokens.OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync(x
-                => x.AccountId == accountId, cancellationToken);
-            return token!.Revoked;
-        }
-
-        public async Task RevokeRefreshTokenAsync(string token,
-                                                  CancellationToken cancellationToken)
-        {
-            try
+            var bytes = new byte[length];
+            using (var random = RandomNumberGenerator.Create())
             {
-
-                var hash = BC.HashPassword(token);
-                RefreshToken? refToken = await context.RefreshTokens.FirstOrDefaultAsync(x
-                    => x.Hash == hash, cancellationToken);
-                if (refToken != null)
-                {
-                    refToken.Revoked = true;
-                    await context.SaveChangesAsync(cancellationToken);
-                }
+                random.GetBytes(bytes);
             }
-            catch (Exception ex)
+            var value = Convert.ToBase64String(bytes);
+            var token = new RefreshToken()
             {
-                logger.LogError(ex.Message);
-            }
+                AccountId = accountId,
+                Hash = BC.HashPassword(value),
+                ExpiresAt = DateTime.UtcNow.AddDays(Convert.ToInt32(options.LifeTime)),
+            };
+
+            await context.RefreshTokens.AddAsync(token);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return value;
         }
     }
 }

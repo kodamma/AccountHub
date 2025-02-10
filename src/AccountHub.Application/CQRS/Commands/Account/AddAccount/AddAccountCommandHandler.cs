@@ -66,10 +66,10 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
                 await context.SaveChangesAsync(cancellationToken);
 
                 logger.LogInformation($"AccountCreated: "
-                                      + $"Id={account.Id}, "
-                                      + $"Username={account.Username}, "
-                                      + $"Email={account.Email}, "
-                                      + $"Role={account.Role}");
+                                      + $"Id={account.Id} | "
+                                      + $"Username={account.Username} | "
+                                      + $"Email={account.Email} | "
+                                      + $"Role={account.Role};");
             }
             catch(Exception ex)
             {

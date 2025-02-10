@@ -1,20 +1,13 @@
 ﻿using AccountHub.Domain.Entities;
+using System.Security.Claims;
 
 namespace AccountHub.Domain.Services
 {
     public interface IAuthenticationService
     {
-        Task<(string, string)> Authenticate(Account account, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// It returns the remaining validity time of the access token.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        int GetRemainingTime(string token);
-        Task RevokeRefreshTokenAsync(string token,
-                                     CancellationToken cancellationToken);
-        Task<bool> IsTokenRevokedAsync(Guid accountId, CancellationToken cancellationToken);
+        string GenerateAccessToken(ClaimsIdentity identity);
+        Task<string> GenerateRefreshToken(Guid accountId,
+                                          int length = 32,
+                                          CancellationToken cancellationToken = default);
     }
 }
