@@ -1,88 +1,99 @@
-﻿//using AccountHub.Application.CQRS.Commands.Authentication.Login;
-//using AccountHub.Application.Services;
-//using AccountHub.Domain.Services;
-//using AccountHub.Persistent.Shared;
-//using Kodamma.Common.Base.Utilities;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using System.Security.Claims;
-//using AccountEntity = AccountHub.Domain.Entities.Account;
-//using BC = BCrypt.Net.BCrypt;
+﻿using AccountHub.Application.CQRS.Commands.Authentication.Login;
+using AccountHub.Application.Options;
+using AccountHub.Application.Services;
+using AccountHub.Domain.Services;
+using AccountHub.Persistent.Shared;
+using Kodamma.Common.Base.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using BC = BCrypt.Net.BCrypt;
 
-//namespace AccountHub.Application.Test.Commands.Account
-//{
-//    [TestClass]
-//    public class LoginCommandHandlerTest
-//    {
-//        LoginCommandHandler handler;
+namespace AccountHub.Application.Test.Commands.Account
+{
+    [TestClass]
+    public class LoginCommandHandlerTest
+    {
+        private LoginCommandHandler handler;
+        private AccountHubDbContext context;
+        private IAuthenticationService authService;
+        private Mock<ILogger<LoginCommandHandler>> logger;
 
-//        private AccountHubDbContext context;
-//        private IAuthenticationService authenticationService;
-//        private Mock<ITokenGenerator> tokenGeneratorMock;
-//        private Mock<ILogger<LoginCommandHandler>> loggerMock;
-//        private string passwordSalt = BC.GenerateSalt();
+        [TestInitialize]
+        public void Initialize()
+        {
+            context = new AccountHubDbContext(
+                new DbContextOptionsBuilder<AccountHubDbContext>()
+                .UseInMemoryDatabase("AccountHub.Dev").Options);
 
-//        private Mock<ILogger<AuthenticationService>> authloggerMock;
-//        private Mock<IConfiguration> configurationMock;
+            string passwordSalt = BC.GenerateSalt();
+            context.Accounts.Add(new Domain.Entities.Account()
+            {
+                Username = "user",
+                Email = "user@mail.ru",
+                PasswordHash = BC.HashPassword("qwerty123", passwordSalt),
+                PasswordSalt = passwordSalt,
+                Birthdate = new DateOnly(1999, 10, 10)
+            });
+            context.SaveChanges();
 
-//        [TestInitialize]
-//        public void Initialize()
-//        {
-//            var options = new DbContextOptionsBuilder<AccountHubDbContext>()
-//                .UseInMemoryDatabase("AccountHub.Dev").Options;
-//            context = new AccountHubDbContext(options);
-//            context.Accounts.Add(new AccountEntity()
-//            {
-//                Username = "user",
-//                Email = "user@mail.ru",
-//                PasswordHash = BC.HashPassword("qwerty123", passwordSalt),
-//                PasswordSalt  = passwordSalt,
-//                Birthdate = new DateOnly(2001, 1, 1),
-//                Role = Domain.Enums.Role.User,
-//            });
-//            context.SaveChanges();
-//            loggerMock = new Mock<ILogger<LoginCommandHandler>>();
+            IOptions<JwtOptions> options = Microsoft.Extensions.Options.Options.Create(new JwtOptions()
+            {
+                Issuer = "http://issuer",
+                Audience = "httP://audience",
+                Key = RandomStringGenerator.Generate(32),
+                LifeTime = 5
+            });
+            authService = new AuthenticationService(context, options);
+            logger = new Mock<ILogger<LoginCommandHandler>>();
+            handler = new LoginCommandHandler(context, authService, logger.Object);
+        }
 
-//            tokenGeneratorMock = new Mock<ITokenGenerator>();
-//            tokenGeneratorMock.Setup(x => x.Generate(It.IsAny<List<Claim>>(), new CancellationToken()))
-//                .Returns(RandomStringGenerator.Generate(32));
-//            authloggerMock = new Mock<ILogger<AuthenticationService>>();
-//            configurationMock = new Mock<IConfiguration>();
-//            authenticationService = new AuthenticationService(context,
-//                                                              tokenGeneratorMock.Object,
-//                                                              authloggerMock.Object,
-//                                                              configurationMock.Object);
-//            handler = new LoginCommandHandler(context,
-//                                              loggerMock.Object,
-//                                              authenticationService);
-//        }
+        [TestMethod]
+        public async Task Login_Must_Success()
+        {
+            var command = new LoginCommand()
+            {
+                Email = "user@mail.ru",
+                Password = "qwerty123"
+            };
 
-//        [TestMethod]
-//        public async Task Authenticate_Must_Success()
-//        {
-//            var result = await handler.Handle(new LoginCommand()
-//            {
-//                Email = "user@mail.ru",
-//                Password = "qwerty123"
-//            }, new CancellationToken());
+            var result = await handler.Handle(command, default);
 
-//            Assert.IsTrue(result.IsSuccess);
-//            Assert.IsNotNull(result.Value.AccessToken);
-//            Assert.IsNotNull(result.Value.RefreshToken);
-//        }
+            Assert.IsTrue(result.IsSuccess);
+            Assert.IsNotNull(result.Value.AccessToken);
+            Assert.IsNotNull(result.Value.RefreshToken);
+        }
 
-//        [TestMethod]
-//        public async Task Authenticate_Must_Fail()
-//        {
-//            var result = await handler.Handle(new LoginCommand()
-//            {
-//                Email = "user@mail.ru",
-//                Password = "qwerty12345"
-//            }, new CancellationToken());
+        [TestMethod]
+        public async Task Login_Must_Non_existent_email()
+        {
+            var command = new LoginCommand()
+            {
+                Email = "other@mail.ru",
+                Password = "qwerty123"
+            };
 
-//            Assert.IsFalse(result.IsSuccess);
-//        }
-//    }
-//}
+            var result = await handler.Handle(command, default);
+
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("There is no account with such an email address.", result.Errors[0].Message);
+        }
+
+        [TestMethod]
+        public async Task Login_Must_Invalid_Password()
+        {
+            var command = new LoginCommand()
+            {
+                Email = "user@mail.ru",
+                Password = "qwerty124"
+            };
+
+            var result = await handler.Handle(command, default);
+
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("Invalid password", result.Errors[0].Message);
+        }
+    }
+}

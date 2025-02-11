@@ -16,20 +16,7 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Logout
         }
         public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                if(authenticationService.GetRemainingTime(request.AccessToken) > 3)
-                {
-                    await cache.SetStringAsync(request.AccountId.ToString(), request.AccessToken);
-                }
-                await authenticationService
-                    .RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
-                
-            }
-            catch (Exception)
-            {
-
-            }
+            
             return Result.Success();
         }
     }

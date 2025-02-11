@@ -28,11 +28,7 @@ namespace AccountHub.API.Controllers
                 ? Ok(result.Value) : BadRequest(result.Errors);
         }
 
-        [HttpPost("sign-in")]
-        public async Task<IActionResult> SignIn([FromForm]LoginCommand command)
-        {
-
-        }
+        
         
 
         //[HttpPost("logout")]

@@ -38,11 +38,11 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Login
                     => x.Email == request.Email, cancellationToken);
                 if (account == null)
                 {
-                    Result.Failure<AuthResponse>([new Error("There is no account with such an email address.")]);
+                    return Result.Failure<AuthResponse>([new Error("There is no account with such an email address.")]);
                 }    
                 else if(!BC.Verify(request.Password, account!.PasswordHash))
                 {
-                    Result.Failure<AuthResponse>([new Error("Invalid password")]);
+                    return Result.Failure<AuthResponse>([new Error("Invalid password")]);
                 }
 
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(new Claim[]
