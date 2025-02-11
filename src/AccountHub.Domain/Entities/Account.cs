@@ -15,6 +15,7 @@ namespace AccountHub.Domain.Entities
         public bool EmailConfirmed { get; set; } = false;
         public bool Locked { get; set; } = false;
         public int LockedCount { get; set; }
-        public DateTimeOffset LockedEnd { get; set; }
+        public DateTimeOffset? LockedEnd { get; set; } = null;
+        public string Region { get; set; } = null!;
     }
 }

@@ -2,6 +2,7 @@
 using AccountHub.Application.Options;
 using AccountHub.Domain.Entities;
 using AccountHub.Domain.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -52,14 +53,28 @@ namespace AccountHub.Application.Services
             var token = new RefreshToken()
             {
                 AccountId = accountId,
-                Hash = BC.HashPassword(value),
-                ExpiresAt = DateTime.UtcNow.AddDays(Convert.ToInt32(options.LifeTime)),
+                Hash = value,
+                Expires = DateTime.UtcNow.AddDays(Convert.ToInt32(options.LifeTime)),
             };
 
             await context.RefreshTokens.AddAsync(token);
             await context.SaveChangesAsync(cancellationToken);
 
             return value;
+        }
+
+        public SecurityToken GetAccessTokenDescriptor(string token)
+            => new JwtSecurityTokenHandler().ReadToken(token);
+
+        public async Task<bool> RevokeToken(string token, CancellationToken cancellationToken)
+        {
+            //var tokenHash = BC.HashPassword(token);
+            var tokenEntity = await context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(x
+                => x.Hash == token, cancellationToken);
+            if(tokenEntity == null) return false;
+            tokenEntity.Revoked = DateTime.UtcNow;
+            await context.SaveChangesAsync(cancellationToken);
+            return true;
         }
     }
 }

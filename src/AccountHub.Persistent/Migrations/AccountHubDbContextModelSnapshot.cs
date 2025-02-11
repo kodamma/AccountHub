@@ -68,7 +68,7 @@ namespace AccountHub.Persistent.Migrations
                     b.Property<int>("LockedCount")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset>("LockedEnd")
+                    b.Property<DateTimeOffset?>("LockedEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
@@ -76,6 +76,10 @@ namespace AccountHub.Persistent.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Region")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -101,15 +105,15 @@ namespace AccountHub.Persistent.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("ExpiresAt")
+                    b.Property<DateTimeOffset>("Expires")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Hash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("Revoked")
-                        .HasColumnType("boolean");
+                    b.Property<DateTimeOffset?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
 
                     b.ToTable("RefreshTokens");
                 });

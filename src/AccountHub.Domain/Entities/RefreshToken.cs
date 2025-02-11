@@ -6,7 +6,9 @@ namespace AccountHub.Domain.Entities
     {
         public Guid AccountId { get; set; }
         public string Hash { get; set; } = null!;
-        public DateTimeOffset ExpiresAt { get; set; }
-        public bool Revoked { get; set; } = false;
+        public DateTimeOffset Expires { get; set; }
+        public bool IsExpired => DateTime.UtcNow >= Expires;
+        public DateTimeOffset? Revoked { get; set; } 
+        public bool IsActive => Revoked == null && !IsExpired;
     }
 }

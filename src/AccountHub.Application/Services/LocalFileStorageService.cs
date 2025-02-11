@@ -17,7 +17,7 @@ namespace AccountHub.Application.Services
         {
             if(file != null)
             {
-                string newFileName = RandomStringGenerator.Generate(file!.FileName.Length);
+                string newFileName = RandomStringGenerator.Generate(file!.FileName.Length, false);
                 var extension = Path.GetExtension(file!.FileName);
                 var path = Path.Combine(config["FileStorage"]!, (newFileName + extension));
                 using var stream = new FileStream(path, FileMode.OpenOrCreate);

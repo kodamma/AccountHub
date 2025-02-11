@@ -1,4 +1,5 @@
 ﻿using AccountHub.Domain.Entities;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
 namespace AccountHub.Domain.Services
@@ -9,5 +10,8 @@ namespace AccountHub.Domain.Services
         Task<string> GenerateRefreshToken(Guid accountId,
                                           int length = 32,
                                           CancellationToken cancellationToken = default);
+
+        SecurityToken GetAccessTokenDescriptor(string token);
+        Task<bool> RevokeToken(string token, CancellationToken cancellationToken);
     }
 }

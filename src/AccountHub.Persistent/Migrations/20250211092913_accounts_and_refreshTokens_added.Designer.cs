@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccountHub.Persistent.Migrations
 {
     [DbContext(typeof(AccountHubDbContext))]
-    [Migration("20250129101659_refreshTokens_table_added")]
-    partial class refreshTokens_table_added
+    [Migration("20250211092913_accounts_and_refreshTokens_added")]
+    partial class accounts_and_refreshTokens_added
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,7 +71,7 @@ namespace AccountHub.Persistent.Migrations
                     b.Property<int>("LockedCount")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset>("LockedEnd")
+                    b.Property<DateTimeOffset?>("LockedEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
@@ -79,6 +79,14 @@ namespace AccountHub.Persistent.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -100,15 +108,15 @@ namespace AccountHub.Persistent.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("ExpiresAt")
+                    b.Property<DateTimeOffset>("Expires")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Hash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("Revoked")
-                        .HasColumnType("boolean");
+                    b.Property<DateTimeOffset?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
 
                     b.ToTable("RefreshTokens");
                 });

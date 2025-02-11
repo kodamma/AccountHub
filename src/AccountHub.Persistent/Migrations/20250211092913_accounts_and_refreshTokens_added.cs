@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AccountHub.Persistent.Migrations
 {
     /// <inheritdoc />
-    public partial class accounts_table_added : Migration
+    public partial class accounts_and_refreshTokens_added : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,14 +24,33 @@ namespace AccountHub.Persistent.Migrations
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     Birthdate = table.Column<DateOnly>(type: "date", nullable: false),
                     AvatarURL = table.Column<string>(type: "text", nullable: true),
+                    Role = table.Column<string>(type: "text", nullable: false),
                     EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     Locked = table.Column<bool>(type: "boolean", nullable: false),
                     LockedCount = table.Column<int>(type: "integer", nullable: false),
-                    LockedEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    LockedEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Region = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Hash = table.Column<string>(type: "text", nullable: false),
+                    Expires = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Revoked = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
@@ -46,6 +65,9 @@ namespace AccountHub.Persistent.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
         }
     }
 }

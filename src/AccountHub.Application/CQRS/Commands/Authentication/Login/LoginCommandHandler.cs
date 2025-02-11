@@ -45,13 +45,13 @@ namespace AccountHub.Application.CQRS.Commands.Authentication.Login
                     return Result.Failure<AuthResponse>([new Error("Invalid password")]);
                 }
 
-                ClaimsIdentity claimsIdentity = new ClaimsIdentity(new Claim[]
-                {
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(
+                [
                     new Claim(ClaimTypes.NameIdentifier, account!.Id.ToString()),
                     new Claim(JwtRegisteredClaimNames.Name, account.Username),
                     new Claim(JwtRegisteredClaimNames.Email, account.Email),
                     new Claim(ClaimTypes.Role, account.Role.ToString())
-                });
+                ]);
 
                 accessToken = authenticationService.GenerateAccessToken(claimsIdentity);
                 refToken = await authenticationService.GenerateRefreshToken(account.Id);
