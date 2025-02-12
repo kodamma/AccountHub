@@ -62,7 +62,7 @@ namespace AccountHub.Application.Test.Commands.Account
             {
                 Username = "user2",
                 Email = "user2@mail.ru",
-                Password = "password",
+                Password = "password123",
                 Birthdate = new DateOnly(2001, 1, 1),
                 Country = "Russia",
                 Agree = true,

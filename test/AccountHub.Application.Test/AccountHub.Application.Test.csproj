@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <Reference Include="Kodamma.Common.Base">
-      <HintPath>..\..\..\Lib\Kodamma.Common.Base\bin\Debug\net8.0\Kodamma.Common.Base.dll</HintPath>
+      <HintPath>..\..\..\Kodamma.Common.Base\bin\Debug\net8.0\Kodamma.Common.Base.dll</HintPath>
     </Reference>
   </ItemGroup>
 
