@@ -25,8 +25,8 @@ namespace AccountHub.Application.Test.Validation
                 Email = "user@mail.ru",
                 Password = "password",
                 Birthdate = new DateOnly(2012, 1, 1),
-                Region = "Russia",
-                IsAgree = true,
+                Country = "Russia",
+                Agree = true,
                 Avatar = null
             };
         }
@@ -50,6 +50,7 @@ namespace AccountHub.Application.Test.Validation
             Assert.IsFalse(result.IsValid);
             result.ShouldHaveValidationErrorFor(x => x.Password);
             result.ShouldHaveValidationErrorFor(x => x.Birthdate);
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "MINIMUM_AGE_REQUIREMENT_NOT_MET"));
             Assert.AreEqual(12, CalculateAge(command.Birthdate));
         }
 
@@ -62,7 +63,26 @@ namespace AccountHub.Application.Test.Validation
 
             Assert.IsFalse(result.IsValid);
             result.ShouldHaveValidationErrorFor(x => x.Birthdate);
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "MAXIMUM_AGE_EXCEEDED"));
             Assert.AreEqual(101, CalculateAge(command.Birthdate));
+        }
+
+        [TestMethod]
+        public async Task AddAccountCommandValidator_Returning_Error_Codes()
+        {
+            command.Username = "^";
+            command.Email = "user^@mail.ru";
+            command.Password = "pas s";
+            command.Agree = false;
+
+            var result = await validator.TestValidateAsync(command);
+
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "INVALID_USERNAME_CHARACTERS"));
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "INVALID_USERNAME_LENGTH"));
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "INVALID_PASSWORD"));
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "INVALID_PASSWORD_LENGTH"));
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "TERMS_NOT_ACCEPTED"));
+            Assert.IsTrue(result.Errors.Any(x => x.CustomState.ToString() == "INVALID_EMAIL_FORMAT"));
         }
 
         private static int CalculateAge(DateOnly date)

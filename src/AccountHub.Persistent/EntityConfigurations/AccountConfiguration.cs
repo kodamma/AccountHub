@@ -9,7 +9,7 @@ namespace AccountHub.Persistent.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Account> builder)
         {
-            builder.Property(x => x.Username).HasMaxLength(35);
+            builder.Property(x => x.Username).HasMaxLength(45);
             builder.Property(x => x.Email).HasMaxLength(254);
             builder.HasIndex(x => x.Email).IsUnique();
             builder.Property(x => x.Role).HasConversion(
