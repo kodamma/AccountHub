@@ -3,6 +3,7 @@ using System;
 using AccountHub.Persistent.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccountHub.Persistent.Migrations
 {
     [DbContext(typeof(AccountHubDbContext))]
-    partial class AccountHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250212145452_ipAddress_column_Account_added")]
+    partial class ipAddress_column_Account_added
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

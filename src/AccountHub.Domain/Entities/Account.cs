@@ -17,5 +17,6 @@ namespace AccountHub.Domain.Entities
         public int LockedCount { get; set; }
         public DateTimeOffset? LockedEnd { get; set; } = null;
         public string Country { get; set; } = null!;
+        public string IpAddress { get; set; } = null!;
     }
 }
