@@ -3,11 +3,11 @@ using AccountHub.Application.CQRS.Commands.Authentication.Login;
 using AccountHub.Application.CQRS.Commands.Authentication.Logout;
 using AccountHub.Application.Options;
 using AccountHub.Application.Responses;
-using Kodamma.Common.Base.API;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Kodamma.Common.Base.API;
 
 namespace AccountHub.API.Controllers
 {

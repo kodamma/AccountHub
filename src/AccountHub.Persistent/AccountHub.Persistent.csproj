@@ -29,10 +29,4 @@
     <ProjectReference Include="..\AccountHub.Application\AccountHub.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Kodamma.Bus.Messages">
-      <HintPath>..\..\..\Lib\Kodamma.Bus.Messages\bin\Debug\net8.0\Kodamma.Bus.Messages.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

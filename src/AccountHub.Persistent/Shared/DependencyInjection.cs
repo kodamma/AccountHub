@@ -1,10 +1,8 @@
 ﻿using AccountHub.Application.Interfaces;
-using Kodamma.Bus.Messages.Identity;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
 
 namespace AccountHub.Persistent.Shared
 {

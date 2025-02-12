@@ -46,13 +46,13 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
 
                 if (account != null)
                     return Result.Failure<SignUpAccountResponse>(
-                        [new Error("EMAIL_ALREADY_EXISTS", "A user with such an email already exists")]);
+                        [new Error("EMAIL_ALREADY_EXISTS", "A account with such an email already exists.")]);
 
                 var validationResult = await validator.ValidateAsync(request, cancellationToken);
                 if (!validationResult.IsValid)
                     return Result.Failure<SignUpAccountResponse>(
                         validationResult.Errors.Select(x 
-                            => new Error(x.CustomState!.ToString()!, x.ErrorMessage)).ToArray());
+                            => new Error(x.ErrorCode, x.ErrorMessage)).ToArray());
 
                 account = mapper.Map<AccountEntity>(request);
 

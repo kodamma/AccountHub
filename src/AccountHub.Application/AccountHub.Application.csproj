@@ -31,11 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Kodamma.Bus.Messages">
-      <HintPath>..\..\..\Lib\Kodamma.Bus.Messages\bin\Debug\net8.0\Kodamma.Bus.Messages.dll</HintPath>
-    </Reference>
     <Reference Include="Kodamma.Common.Base">
-      <HintPath>..\..\..\Lib\Kodamma.Common.Base\bin\Debug\net8.0\Kodamma.Common.Base.dll</HintPath>
+      <HintPath>..\..\..\Kodamma.Common.Base\bin\Debug\net8.0\Kodamma.Common.Base.dll</HintPath>
     </Reference>
   </ItemGroup>
 
