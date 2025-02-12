@@ -20,7 +20,10 @@ namespace AccountHub.Application.Shared
             services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
             services.AddTransient<IAuthenticationService, AuthenticationService>();
 
-            services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+            services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Name));
+            services.Configure<IpRateLimitingOptions>(configuration.GetSection(IpRateLimitingOptions.Name));
+            services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.Name));
+            services.Configure<RedisOptions>(configuration.GetSection(RedisOptions.Name));
 
             return services;
         }

@@ -4,6 +4,7 @@ using AccountHub.Application.Shared;
 using AccountHub.Persistent.Shared;
 using Kodamma.Common.Base.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
@@ -20,7 +21,6 @@ public class Program
         builder.Services.AddAutoMapper(x =>
         {
             x.AddProfile(new AssemblyMappingProfile(typeof(IAccountHubDbContext).Assembly));
-            x.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
         });
 
         builder.Services.AddLogging(x =>
@@ -46,24 +46,24 @@ public class Program
 
             x.AddSecurityRequirement(new OpenApiSecurityRequirement()
             {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    []
                 }
-            },
-            []
-        }
             });
         });
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(x =>
             {
                 JwtOptions options = new JwtOptions();
-                builder.Configuration.GetSection(JwtOptions.SectionName).Bind(options);
+                builder.Configuration.GetSection(JwtOptions.Name).Bind(options);
 
                 x.RequireHttpsMetadata = true;
                 x.SaveToken = true;
@@ -79,15 +79,26 @@ public class Program
                 };
             });
         builder.Services.AddAuthorization();
+        builder.Services.AddRateLimiter(x =>
+        {
+            IpRateLimitingOptions options = new IpRateLimitingOptions();
+            builder.Configuration.GetSection($"Kestrel:{IpRateLimitingOptions.Name}").Bind(options);
+            x.AddFixedWindowLimiter("fixed", c =>
+            {
+                c.PermitLimit = options.PermitLimit;
+                c.Window = options.Window;
+            });
+        });
 
         var app = builder.Build();
 
         if (app.Environment.IsDevelopment())
         {
-            
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
-        app.UseSwagger();
-        app.UseSwaggerUI();
+
+        app.UseRateLimiter();
 
         app.UseAuthentication();
         app.UseAuthorization();

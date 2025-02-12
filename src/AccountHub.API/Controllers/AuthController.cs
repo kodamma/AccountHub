@@ -26,7 +26,7 @@ namespace AccountHub.API.Controllers
         public async Task<ActionResult<SignUpAccountResponse>> SignUp(
             [FromForm] AddAccountCommand command)
         {
-            command.IpAddress = HttpContext.Connection.RemoteIpAddress!.ToString();
+            command.IpAddress = GetClientIpAddress();
             var result = await Mediator.Send(command);
             return result.IsSuccess
                 ? Ok(result.Value) : BadRequest(result.Errors);

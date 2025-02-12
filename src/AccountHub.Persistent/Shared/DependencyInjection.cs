@@ -1,4 +1,5 @@
 ﻿using AccountHub.Application.Interfaces;
+using AccountHub.Application.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,20 +18,23 @@ namespace AccountHub.Persistent.Shared
             services.AddScoped<IAccountHubDbContext>(x => x.GetRequiredService<AccountHubDbContext>());
             services.AddStackExchangeRedisCache(x =>
             {
-                var section = config.GetSection("ConnectionStrings:Redis");
-                x.InstanceName = section["Instance"];
-                x.Configuration = section["Host"];
+                RedisOptions options = new RedisOptions();
+                config.GetSection($"ConnectionStrings:{RedisOptions.Name}");
+                x.InstanceName = options.Instance;
+                x.Configuration = options.Host;
             });
             services.AddMassTransit(x =>
             {
-                var section = config.GetSection("RabbitMq");
+                RabbitMqOptions options = new RabbitMqOptions();
+                config.GetSection(RabbitMqOptions.Name).Bind(options);
                 x.UsingRabbitMq((context, c) =>
                 {
-                    c.Host("localhost", h =>
+                    c.Host(options.Host, h =>
                     {
-                        h.Username("guest");
-                        h.Password("guest");
+                        h.Username(options.Username);
+                        h.Password(options.Password);
                     });
+                    c.UseMessageRetry(r => r.Interval(options.RetryCount, options.Interval));
                 });
             });
             return services;
