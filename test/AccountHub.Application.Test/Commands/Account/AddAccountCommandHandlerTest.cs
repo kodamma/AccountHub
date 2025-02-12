@@ -37,7 +37,7 @@ namespace AccountHub.Application.Test.Commands.Account
                 Birthdate = new DateOnly(1999, 5, 5),
                 PasswordHash = "somehash",
                 PasswordSalt = "somesalt",
-                Region = "Russia"
+                Country = "Russia"
             });
             context.SaveChanges();
 
@@ -64,8 +64,8 @@ namespace AccountHub.Application.Test.Commands.Account
                 Email = "user2@mail.ru",
                 Password = "password",
                 Birthdate = new DateOnly(2001, 1, 1),
-                Region = "Russia",
-                IsAgree = true,
+                Country = "Russia",
+                Agree = true,
                 Avatar = null
             };
         }

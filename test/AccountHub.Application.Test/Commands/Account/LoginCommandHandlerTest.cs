@@ -35,7 +35,7 @@ namespace AccountHub.Application.Test.Commands.Account
                 PasswordHash = BC.HashPassword("qwerty123", passwordSalt),
                 PasswordSalt = passwordSalt,
                 Birthdate = new DateOnly(1999, 10, 10),
-                Region = "Russia"
+                Country = "Russia"
             });
             context.SaveChanges();
 
