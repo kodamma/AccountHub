@@ -1,4 +1,4 @@
-﻿using AccountHub.Application.Options;
+﻿ using AccountHub.Application.Options;
 using AccountHub.Application.Services;
 using AccountHub.Domain.Services;
 using FluentValidation;
@@ -21,7 +21,7 @@ namespace AccountHub.Application.Shared
             services.AddTransient<IAuthenticationService, AuthenticationService>();
 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Name));
-            services.Configure<IpRateLimitingOptions>(configuration.GetSection(IpRateLimitingOptions.Name));
+            services.Configure<IpRateLimiterOptions>(configuration.GetSection($"Kestrel:{IpRateLimiterOptions.Name}"));
             services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.Name));
             services.Configure<RedisOptions>(configuration.GetSection(RedisOptions.Name));
 

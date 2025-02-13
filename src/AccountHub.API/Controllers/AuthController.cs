@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Kodamma.Common.Base.API;
+using Kodamma.Common.Base.Extensions;
 
 namespace AccountHub.API.Controllers
 {
@@ -26,7 +27,7 @@ namespace AccountHub.API.Controllers
         public async Task<ActionResult<SignUpAccountResponse>> SignUp(
             [FromForm] AddAccountCommand command)
         {
-            command.IpAddress = GetClientIpAddress();
+            command.IpAddress = HttpContext.GetClientIPAddress();
             var result = await Mediator.Send(command);
             return result.IsSuccess
                 ? Ok(result.Value) : BadRequest(result.Errors);

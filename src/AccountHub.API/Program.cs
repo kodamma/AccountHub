@@ -81,12 +81,13 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddRateLimiter(x =>
         {
-            IpRateLimitingOptions options = new IpRateLimitingOptions();
-            builder.Configuration.GetSection($"Kestrel:{IpRateLimitingOptions.Name}").Bind(options);
+            IpRateLimiterOptions options = new IpRateLimiterOptions();
+            builder.Configuration.GetSection($"Kestrel:{IpRateLimiterOptions.Name}").Bind(options);
             x.AddFixedWindowLimiter("fixed", c =>
             {
-                c.PermitLimit = options.PermitLimit;
-                c.Window = options.Window;
+                c.PermitLimit = options.MaxAttempts;
+                c.Window = TimeSpan.FromMinutes(options.Window);
+                c.QueueLimit = options.QueueLimit;
             });
         });
 
@@ -98,6 +99,7 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseIPBlock();
         app.UseRateLimiter();
 
         app.UseAuthentication();

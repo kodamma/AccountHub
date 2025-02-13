@@ -19,7 +19,7 @@ namespace AccountHub.Persistent.Shared
             services.AddStackExchangeRedisCache(x =>
             {
                 RedisOptions options = new RedisOptions();
-                config.GetSection($"ConnectionStrings:{RedisOptions.Name}");
+                config.GetSection($"ConnectionStrings:{RedisOptions.Name}").Bind(options);
                 x.InstanceName = options.Instance;
                 x.Configuration = options.Host;
             });
