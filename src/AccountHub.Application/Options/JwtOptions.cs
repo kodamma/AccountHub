@@ -5,7 +5,7 @@ namespace AccountHub.Application.Options
 {
     public class JwtOptions
     {
-        public const string SectionName = "JWTOptions";
+        public const string Name = "JWTOptions";
         public string Issuer { get; set; } = null!;
         public string Audience { get; set; } = null!;
         public string Key { get; set; } = null!;
