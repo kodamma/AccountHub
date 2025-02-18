@@ -1,4 +1,5 @@
-﻿using AccountHub.Application.CQRS.Extensions;
+﻿using AccountHub.Application.ApiClients;
+using AccountHub.Application.CQRS.Extensions;
 using AccountHub.Application.Interfaces;
 using AccountHub.Application.Responses;
 using AccountHub.Application.Validation;
@@ -17,23 +18,24 @@ namespace AccountHub.Application.CQRS.Commands.Account.AddAccount
     public class AddAccountCommandHandler
         : ICommandHandler<AddAccountCommand, Result<SignUpAccountResponse>>
     {
-        private readonly IFileStorageService fileStorageService;
-        private readonly IAccountHubDbContext context;
-        private readonly IMapper mapper;
-        private readonly ILogger<AddAccountCommandHandler> logger;
+        private IFileStorageService fileStorageService;
+        private IAccountHubDbContext context;
+        private IMapper mapper;
+        private ILogger<AddAccountCommandHandler> logger;
 
         private readonly AddAccountCommandValidator validator;
         public AddAccountCommandHandler(IAccountHubDbContext context,
                                         IFileStorageService fileStorageService,
                                         IConfiguration conf,
                                         IMapper mapper,
-                                        ILogger<AddAccountCommandHandler> logger)
+                                        ILogger<AddAccountCommandHandler> logger,
+                                        IGeoServiceApiClient apiClient)
         {
             this.fileStorageService = fileStorageService;
             this.context = context;
             this.mapper = mapper;
             this.logger = logger;
-            validator = new AddAccountCommandValidator(conf);
+            validator = new AddAccountCommandValidator(conf, apiClient);
         }
 
         public async Task<Result<SignUpAccountResponse>> Handle(AddAccountCommand request,

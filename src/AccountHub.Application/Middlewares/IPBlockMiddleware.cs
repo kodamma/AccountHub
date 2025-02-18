@@ -31,13 +31,19 @@ namespace AccountHub.Application.Middlewares
                 return;
             }
 
-            var blockUntil = await cache.GetStringAsync(ipAddress);
+            var blockUntilJson = await cache.GetStringAsync(ipAddress);
 
-            if(!string.IsNullOrEmpty(blockUntil) && DateTime.Parse(blockUntil) > DateTime.UtcNow)
+            if (!string.IsNullOrEmpty(blockUntilJson))
             {
-                context.Response.StatusCode = 429;
-                context.Response.Headers.Add("X-RateLimit-Reset", blockUntil);
-                return;
+                var blockUntilList = JsonSerializer.Deserialize<List<DateTime>>(blockUntilJson);
+                var blockUntil = blockUntilList?.FirstOrDefault();
+
+                if (blockUntil.HasValue && blockUntil.Value > DateTime.UtcNow)
+                {
+                    context.Response.StatusCode = 429;
+                    context.Response.Headers.Add("X-RateLimit-Reset", blockUntil.Value.ToString("o"));
+                    return;
+                }
             }
 
             var requestHistoryKey = ipAddress;
