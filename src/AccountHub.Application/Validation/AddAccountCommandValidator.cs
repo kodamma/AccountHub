@@ -1,4 +1,5 @@
-﻿using AccountHub.Application.CQRS.Commands.Account.AddAccount;
+﻿using AccountHub.Application.ApiClients;
+using AccountHub.Application.CQRS.Commands.Account.AddAccount;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using System.Net.Mail;
@@ -8,10 +9,13 @@ namespace AccountHub.Application.Validation
 {
     public class AddAccountCommandValidator : AbstractValidator<AddAccountCommand>
     {
+        private readonly IGeoServiceApiClient apiClient;
         private readonly long maxAvatarLenght;
-        public AddAccountCommandValidator(IConfiguration config)
+        public AddAccountCommandValidator(IConfiguration config, IGeoServiceApiClient apiClient)
         {
+            this.apiClient = apiClient;
             maxAvatarLenght = long.Parse(config["Kestrel:MaxAvatarLength"]!);
+
             RuleFor(x => x.Username)
                 .Matches(@"^[a-zA-Z0-9_8$&.@#]+$")
                 .WithErrorCode("INVALID_USERNAME_CHARACTERS")
@@ -50,6 +54,16 @@ namespace AccountHub.Application.Validation
                 .Must(a => a == true)
                 .WithErrorCode("TERMS_NOT_ACCEPTED")
                 .WithMessage("You must accept the terms and conditions to complete the registration.");
+            RuleFor(x => x.Country)
+                .MustAsync(IsAvailableCountry)
+                .WithErrorCode("INVALID_COUNTRY")
+                .WithMessage("There is no country with that name.");
+        }
+
+        private async Task<bool> IsAvailableCountry(string input, CancellationToken cancellationToken)
+        {
+            var result = await apiClient.GetAvailableCountries();
+            return result.Contains(input);
         }
 
         private static int CalculateAge(DateOnly date)
